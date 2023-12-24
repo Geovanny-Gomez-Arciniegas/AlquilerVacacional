@@ -13,6 +13,14 @@ import { formatCurrency } from './utils';
 export async function fetchRevenue() {
   // Add noStore() here prevent the response from being cached.
   // This is equivalent to in fetch(..., {cache: 'no-store'}).
+  // Fetch the last 5 invoices, sorted by date
+  // Recupera las últimas 5 facturas, ordenadas por fecha
+  const data = await sql<LatestInvoiceRaw>`
+    SELECT invoices.amount, customers.name, customers.image_url, customers.email
+    FROM invoices
+    JOIN customers ON invoices.customer_id = customers.id
+    ORDER BY invoices.date DESC
+    LIMIT 5`;
 
   try {
     // Artificially delay a response for demo purposes.
