@@ -14,6 +14,8 @@ const FormSchuma = z.object({
 });
 
 const CreateInvoice = FormSchuma.omit({ id: true, date: true });
+const UpdateInvoice = FormSchuma.omit({ id: true, date: true });
+
 
 // Marcar que todas las funciones que se exporten en este archivo son asincronas y son de SERVIDOR
 // y por lo tanto no se ejecutan ni se envian al cliente
@@ -38,10 +40,27 @@ export async function createInvoice(formData: FormData) {
 
   // Con este codigo redireccionamos al usuario a la pagina de invoices
   redirect('/dashboard/invoices');
-
-
 };
 
 // const rawFormData = Object.fromEntries(formData.entries()) // Este lo implemente para tratar de resolver el problema de que no se enviaba el formdata 
 
 // const rawFormData = Object.fromEntries(formData.entries()) // Este lo implemente para tratar de resolver el problema de que no se enviaba el formdata
+
+export async function updateInvoice(id: string, formData: FormData) {
+  const { customerId, amount, status } = UpdateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+ 
+  const amountInCents = amount * 100;
+ 
+  await sql`
+    UPDATE invoices
+    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+    WHERE id = ${id}
+  `;
+ 
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+};
