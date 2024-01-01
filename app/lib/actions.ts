@@ -7,9 +7,15 @@ import { redirect } from 'next/navigation';
 
 const FormSchuma = z.object({
   id: z.string(),
-  customerId: z.string(),
-  amount: z.coerce.number(),
-  status: z.enum(['pending', 'paid']),
+  customerId: z.string({
+    invalid_type_error: 'Please select a customer',
+  }),
+  amount: z.coerce
+    .number()
+    .gt(0, { message: 'Please enter an amont greater than 0.' }),
+  status: z.enum(['pending', 'paid'], {
+    invalid_type_error: 'Please select a status',
+  }),
   date: z.string(),
 });
 
@@ -20,12 +26,35 @@ const UpdateInvoice = FormSchuma.omit({ id: true, date: true });
 // Marcar que todas las funciones que se exporten en este archivo son asincronas y son de SERVIDOR
 // y por lo tanto no se ejecutan ni se envian al cliente
 
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
+// This is temporary until @types/react-dom is updated
+
+export type State = {
+  error?: {
+    customerId?: string[];
+    amount?: string[];
+    status?: string[];
+  };
+  message?: string | null;
+}
+
+export async function createInvoice(prevState: State, formData: FormData) {
+  // Validate form fields using Zod
+  const validatedFields = CreateInvoice.safeParse({
     customerId: formData.get('customerId'),
     amount: formData.get('amount'),
     status: formData.get('status'),
   });
+
+  // If form validation fails, return errors early. Otherwise, continue.
+  if (!validatedFields.success) {
+    return {
+      error: validatedFields.error.flatten().fieldErrors,
+      message: 'Missing Fields. Failed to Create Invoice',
+    };
+  }
+
+  // Prepare data for insertion into database
+  const { customerId, amount, status } = validatedFields.data;
   const amountInCents = amount * 100;
   const date = new Date().toISOString().split('T')[0];
 
@@ -36,6 +65,7 @@ export async function createInvoice(formData: FormData) {
     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
   } catch (error) {
+    // If database error ocurs, return a more specific error message
     return {
       message: 'Database Error: Failed to Create Invoice',
     };
@@ -71,21 +101,21 @@ export async function updateInvoice(id: string, formData: FormData) {
     return { message: 'Database Error: Failed to Update Invoice' };
   }
 
-
   revalidatePath('/dashboard/invoices');
   redirect('/dashboard/invoices');
 };
 
 export async function deleteInvoice(id: string) {
-  throw new Error('Failed to Delete Invoice');
   try {
     await sql`
       DELETE FROM invoices
       WHERE id = ${id}
     `;
     revalidatePath('/dashboard/invoices');
-    return { message: 'Invoice Deleted'};
+
+    return { message: 'Invoice Deleted' };
   } catch (error) {
     return { message: 'Database Error: Failed to Delete Invoice' };
   }
+
 };
