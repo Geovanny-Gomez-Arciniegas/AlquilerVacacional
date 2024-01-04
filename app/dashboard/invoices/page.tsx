@@ -6,6 +6,14 @@ import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchInvoicesPages } from '@/app/lib/data';
+//Para cambiar los metadatos de el título de la página y la descripción
+import { Metadata } from 'next';
+
+// Con esta metadata podemos cambiar el título de la página y la descripción
+export const metadata: Metadata = {
+  title: 'Invoices',
+  description: 'Invoices page',
+};
 
 export default async function Page({
   searchParams,
