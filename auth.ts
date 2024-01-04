@@ -17,7 +17,7 @@ async function getUser(email: string): Promise<User | undefined> {
 }
 
 export const { auth, signIn, signOut } = NextAuth({
-  // ...authConfig,
+  ...authConfig,//... es un operador que permite desestructurar un objeto
   providers: [
     Credentials({
       async authorize(credentials) {
