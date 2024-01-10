@@ -4,10 +4,10 @@ import playa from "../../../public/playa.jpg"; // se importa la imagen de playa 
 // Este componente devuelve el header de la pagina principal
 export default function Header() {
   return (
-    <Image 
-      src={playa} 
+    <Image
+      src={playa}
       alt={"Playa Santa Marta"}
-      layout="responsive"
-      />          
+      priority={true}
+    />
   );
 }
