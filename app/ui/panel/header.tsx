@@ -8,6 +8,11 @@ export default function Header() {
       src={playa}
       alt={"Playa Santa Marta"}
       priority={true}
+      style={{
+        maxWidth: "100%",
+        height: "auto",
+        objectFit: "cover",        
+      }}
     />
   );
 }

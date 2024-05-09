@@ -3,41 +3,15 @@ import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import styles from '@/app/ui/home.module.css';
 import { lusitana } from './ui/fonts';
-import Header from './ui/panel/header';
-import Layout from './dashboard/layout';
 import { LayoutRouter } from 'next/dist/server/app-render/entry-base';
+import React from 'react'; // Import React
 
 export default function Page() {
   return (
-    <main className="flex min-h-screen flex-col p-6">
-      {/* Se inserta el modulo header para la pagina principal */}
-      <header>
-        <Header />
-      </header>
-
-      {/* <div className="flex h-20 shrink-0 items-end rounded-lg bg-blue-500 p-4 md:h-52">
-        <Header />
-      </div> */}
-      <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-        <div className="flex flex-col justify-center gap-6 rounded-lg bg-gray-50 px-6 py-10 md:w-1/5 md:px-20">
-         <h1>Aca va la navegacion</h1>
-        
-          {/* <Link
-            href="/login"
-            className="flex items-center gap-5 self-start rounded-lg bg-blue-500 px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-blue-400 md:text-base"
-          >
-            <span>Log in</span> <ArrowRightIcon className="w-5 md:w-6" />
-          </Link> */}
-        </div>
-        <div className="flex items-center justify-center p-2 md:w-4/5 md:px-28 md:py-2">
-          <h1>Este es el segundo espacio</h1>
-          
-          {/* Add Hero Images Here */}
-          {/* Imagen para computador */}
-
-
-        </div>
+    <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
+      <div className="flex items-center justify-center p-2 md:w-4/5 md:px-28 md:py-2">
+        <h1>Este es el segundo espacio</h1>
       </div>
-    </main>
+    </div>
   );
 }
