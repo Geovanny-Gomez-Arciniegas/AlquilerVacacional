@@ -1,3 +1,3 @@
 export default function Page() {
-    return <p>Pagina Casas</p>;
+    return <p>Pagina Fincas</p>;
 }

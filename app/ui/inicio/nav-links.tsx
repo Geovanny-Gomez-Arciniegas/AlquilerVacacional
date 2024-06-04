@@ -15,13 +15,15 @@ const links = [
   { name: 'Inicio', href: '/', icon: HomeIcon },
   {
     name: 'Cabañas',
-    href: '/panel/Cabanas',
+    // href: '/panel/Cabanas',
+    href: '/Cabanas',
+
     icon: DocumentDuplicateIcon,
   },
-  { name: 'Casas', href: '/panel/Casas', icon: UserGroupIcon },
-  { name: 'Apartamentos', href: '/panel/Apartamentos', icon: UserGroupIcon },
-  { name: 'Fincas', href: '/panel/Fincas', icon: UserGroupIcon },
-  { name: 'Habitaciones', href: '/panel/Habitaciones', icon: UserGroupIcon },
+  { name: 'Casas', href: '/Casas', icon: UserGroupIcon },
+  { name: 'Apartamentos', href: '/Apartamentos', icon: UserGroupIcon },
+  { name: 'Fincas', href: '/Fincas', icon: UserGroupIcon },
+  { name: 'Habitaciones', href: '/Habitaciones', icon: UserGroupIcon },
 ];
 
 export default function NavLinks() {
