@@ -12,7 +12,7 @@ export default function SideNav() {
         
         <NavLinks />
         <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
-        {/* <form
+        <form
           action={async () => {
             'use server';
             await signOut();
@@ -22,7 +22,7 @@ export default function SideNav() {
             <PowerIcon className="w-6" />
             <div className="hidden md:block">Sign Out</div>
           </button>
-        </form> */}
+        </form>
       </div>
     </div>
   );
