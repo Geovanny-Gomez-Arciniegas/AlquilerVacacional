@@ -1,0 +1,2 @@
+En la actualidad estoy utilizando 
+pnpm para ejecutar pnpm run dev
