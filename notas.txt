@@ -1,2 +1,3 @@
 En la actualidad estoy utilizando 
 pnpm para ejecutar pnpm run dev
+usar pnpm dev para iniciar el servidor en modo desarrollo
