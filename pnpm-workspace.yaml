@@ -1,0 +1,6 @@
+onlyBuiltDependencies:
+  - bcrypt
+  - bufferutil
+  - sharp
+  - unrs-resolver
+  - utf-8-validate

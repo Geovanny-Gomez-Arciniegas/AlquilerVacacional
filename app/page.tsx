@@ -1,4 +1,4 @@
-import {CardInicio} from '@/app/ui/inicio/cards';
+import { CardInicio } from '@/app/ui/inicio/cards';
 import AcmeLogo from '@/app/ui/acme-logo';
 import { ArrowRightIcon } from '@heroicons/react/24/outline';
 import Link from 'next/link';
@@ -14,7 +14,12 @@ export default function Page() {
         <h1>Este es el segundo espacio</h1>
       </div> */}
       <div>
-        <CardInicio />
+        <CardInicio
+          title="Cabaña SantaMarta"
+          description="Hermosa cabaña cerca al mar y de fondo las hermosas montañas..."
+          image="/cabana/cabana.png"
+        />
+
       </div>
     </div>
   );
