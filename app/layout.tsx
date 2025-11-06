@@ -2,7 +2,7 @@ import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import SideNav from "@/app/ui/inicio/sidenav";
-import Header from './ui/panel/header';
+import Header from '@/app/ui/panel/header';
 
 export const metadata: Metadata = {
   // El '%s' contenido de la plantilla se reemplazará por el título de la página especificada en cada página.,
@@ -26,14 +26,14 @@ export default function RootLayout({
         <header>
           <div style={{ objectPosition: "center" }}>
             <Header />
-          </div>,
+          </div>
         </header>
         <main className="flex flex-col p-2 items-center">
           <div className="flex-row flex w-screen md:flex-row md:overflow-hidden">
             <div className="basis-1/5 w-full flex-none md:w-64">
               <SideNav />
-            </div>,
-            <div className="basis-4/5 flex-grow p-6 md:overflow-y-auto md:p-12">
+            </div>
+            <div className="basis-4/5 grow p-6 md:overflow-y-auto md:p-12">
               {children}
             </div>
           </div>
