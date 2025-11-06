@@ -21,3 +21,5 @@ return true;
   },
 providers: [], // Add providers with an empty array for now
 } satisfies NextAuthConfig;
+
+// Satisfies En TypeScript, el operador satisfies verifica si un tipo específico satisface una condición o interfaz determinada. Se trata de una manera nueva y efectiva de garantizar la seguridad de tipos en TypeScript.

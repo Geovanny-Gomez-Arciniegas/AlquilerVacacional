@@ -2,12 +2,12 @@
 'use server';
 
 
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import {  signIn } from '@/auth';
-import { AuthError } from 'next-auth';
+import { z } from 'zod'; // Importamos zod para validar los datos que se envian en el formulario
+import { sql } from '@vercel/postgres'; // Importamos sql para hacer las consultas a la base de datos
+import { revalidatePath } from 'next/cache'; // Importamos revalidatePath para revalidar la pagina de invoices
+import { redirect } from 'next/navigation'; // Importamos redirect para redireccionar al usuario a la pagina de invoices
+import {  signIn } from '@/auth'; // Importamos signIn para autenticar al usuario
+import { AuthError } from 'next-auth'; // Importamos AuthError para manejar los errores de autenticacion
 
 export async function authenticate(
   prevState: string | undefined,
