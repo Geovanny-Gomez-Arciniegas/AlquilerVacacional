@@ -30,14 +30,28 @@ export default function RootLayout({
         </header>
         <main className="flex flex-col p-2 items-center">
           <div className="flex-row flex w-screen md:flex-row md:overflow-hidden">
-            <div className="basis-1/5 w-full flex-none md:w-64">
+            <div className="basis-[15%] w-full flex-none md:w-48">
               <SideNav />
             </div>
-            <div className="basis-4/5 grow p-6 md:overflow-y-auto md:p-12">
+            <div className="basis-[85%] grow p-1 md:overflow-y-auto md:p-2">
               {children}
             </div>
           </div>
         </main>
+
+
+
+
+        {/* <main className="flex flex-col p-2 items-center">
+          <div className="flex-row flex w-screen md:flex-row md:overflow-hidden">
+            <div className="basis-1/5 w-full flex-none md:w-64">
+              <SideNav />
+            </div>
+            <div className="basis-4/5 grow p-1 md:overflow-y-auto md:p-2">
+              {children}
+            </div>
+          </div>
+        </main> */}
       </body>
 
     </html>

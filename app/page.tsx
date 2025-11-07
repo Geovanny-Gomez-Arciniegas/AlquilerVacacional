@@ -9,10 +9,10 @@ import React from 'react'; // Import React
 
 export default function Page() {
   return (
-    <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
-      {/* <div className="flex items-center justify-center p-2 md:w-4/5 md:px-28 md:py-2">
-        <h1>Este es el segundo espacio</h1>
-      </div> */}
+    // <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
+      <div >
+        <h1>Santa Marta: 30 alojamientos</h1>
+      {/* </div> */}
       <div>
         <CardInicio
           title="Cabaña SantaMarta"
