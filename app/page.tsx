@@ -1,4 +1,4 @@
-import { CardInicio } from '@/app/ui/inicio/cards';
+import { CardInicio } from '@/app/ui/inicio/cards1';
 
 
 // import Pagination from '@/app/ui/invoices/pagination';
@@ -21,10 +21,10 @@ import { CardInicio } from '@/app/ui/inicio/cards';
 
 export default function Page() {
   return (
-    // <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
+    <div className="mt-4 flex grow flex-col gap-4 md:flex-row">
       <div >
         <h1>Santa Marta: 30 alojamientos</h1>
-      {/* </div> */}
+      </div>
       <div>
         <CardInicio
           title="Cabaña SantaMarta"
