@@ -1,0 +1,138 @@
+export interface Property {
+  id: string;
+  name: string;
+  category: 'Cabañas' | 'Casas' | 'Apartamentos' | 'Fincas' | 'Habitaciones';
+  description: string;
+  image: string;
+  price: number; // Precio por noche en COP (Pesos Colombianos)
+  rating: number;
+  capacity: number; // Huespedes maximos
+  location: string;
+  bedrooms: number;
+  bathrooms: number;
+  amenities: string[];
+  featured?: boolean;
+}
+
+export const properties: Property[] = [
+  {
+    id: 'prop-1',
+    name: 'Cabaña Eco-Wood en la Sierra Nevada',
+    category: 'Cabañas',
+    description: 'Hermosa cabaña de madera con vistas espectaculares a la Sierra Nevada de Santa Marta. Rodeada de naturaleza, ideal para desconectarse y respirar aire puro. Cuenta con senderos privados, hamacas y avistamiento de aves.',
+    image: '/cabana/cabana.png',
+    price: 320000,
+    rating: 4.9,
+    capacity: 4,
+    location: 'Sierra Nevada, Santa Marta',
+    bedrooms: 2,
+    bathrooms: 1,
+    amenities: ['WiFi', 'Vista a la Montaña', 'Zona de Fogatas', 'Senderismo', 'Pet Friendly'],
+    featured: true,
+  },
+  {
+    id: 'prop-2',
+    name: 'Apartamento Vista al Mar - Rodadero Elite',
+    category: 'Apartamentos',
+    description: 'Moderno apartamento de lujo en primera línea de playa en El Rodadero. Balcón amplio con vista de 180 grados al Mar Caribe, aire acondicionado central, cocina totalmente equipada y acceso directo a la playa.',
+    image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+    price: 450000,
+    rating: 4.8,
+    capacity: 6,
+    location: 'El Rodadero, Santa Marta',
+    bedrooms: 3,
+    bathrooms: 2,
+    amenities: ['Aire Acondicionado', 'Piscina', 'WiFi', 'Vista al Mar', 'Parqueadero', 'Acceso a Playa'],
+    featured: true,
+  },
+  {
+    id: 'prop-3',
+    name: 'Casa Colonial del Centro Histórico',
+    category: 'Casas',
+    description: 'Increíble casa colonial restaurada en el corazón del Centro Histórico de Santa Marta. Cuenta con patio interior español, piscina privada, techos altos de madera y decoración que mezcla lo colonial con lo moderno.',
+    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+    price: 750000,
+    rating: 4.95,
+    capacity: 8,
+    location: 'Centro Histórico, Santa Marta',
+    bedrooms: 4,
+    bathrooms: 4,
+    amenities: ['Piscina Privada', 'WiFi', 'Aire Acondicionado', 'Patio Interior', 'Desayuno Incluido'],
+    featured: true,
+  },
+  {
+    id: 'prop-4',
+    name: 'Finca Cafetera Bella Vista',
+    category: 'Fincas',
+    description: 'Hospédate en una finca cafetera tradicional activa en las faldas de la Sierra. Clima templado delicioso, recorridos del café incluidos, piscina natural de manantial y la mejor atención de la región.',
+    image: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+    price: 600000,
+    rating: 4.7,
+    capacity: 10,
+    location: 'Minca, Santa Marta',
+    bedrooms: 5,
+    bathrooms: 3,
+    amenities: ['Piscina Natural', 'Tour del Café', 'WiFi', 'Desayuno Campestre', 'Parqueadero Gratis'],
+    featured: false,
+  },
+  {
+    id: 'prop-5',
+    name: 'Habitación Suite del Surfista en Taganga',
+    category: 'Habitaciones',
+    description: 'Suite acogedora a pocos pasos de la bahía de Taganga. Perfecta para parejas o viajeros solitarios. Decoración tropical, terraza compartida con hamacas y la mejor puesta de sol de Santa Marta.',
+    image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+    price: 150000,
+    rating: 4.6,
+    capacity: 2,
+    location: 'Taganga, Santa Marta',
+    bedrooms: 1,
+    bathrooms: 1,
+    amenities: ['WiFi', 'Ventilador', 'Terraza', 'Vista al Mar', 'Desayuno Gratis'],
+    featured: false,
+  },
+  {
+    id: 'prop-6',
+    name: 'Cabaña Paradise Beach en Parque Tayrona',
+    category: 'Cabañas',
+    description: 'Cabaña rústica premium ubicada en los límites del Parque Tayrona. Despierta con el sonido de las olas y camina descalzo sobre la arena blanca. Incluye hamacas de playa y restaurante frente al mar.',
+    image: 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
+    price: 520000,
+    rating: 4.92,
+    capacity: 3,
+    location: 'Límites del Tayrona, Santa Marta',
+    bedrooms: 1,
+    bathrooms: 1,
+    amenities: ['Acceso a Playa', 'Restaurante', 'Hamacas', 'Pet Friendly', 'Desconexión Total'],
+    featured: true,
+  },
+  {
+    id: 'prop-7',
+    name: 'Penthouse Moderno con Jacuzzi en Pozos Colorados',
+    category: 'Apartamentos',
+    description: 'Espectacular Penthouse de lujo en Pozos Colorados. Jacuzzi privado en la terraza superior con vista al atardecer, edificio con gimnasio, sauna, bar de piscina y seguridad las 24 horas.',
+    image: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
+    price: 890000,
+    rating: 4.98,
+    capacity: 5,
+    location: 'Pozos Colorados, Santa Marta',
+    bedrooms: 2,
+    bathrooms: 3,
+    amenities: ['Jacuzzi Privado', 'Piscina del Edificio', 'Gimnasio', 'Aire Acondicionado', 'Seguridad 24/7', 'WiFi'],
+    featured: true,
+  },
+  {
+    id: 'prop-8',
+    name: 'Eco-Habitación Vista Selva Tropical',
+    category: 'Habitaciones',
+    description: 'Habitación ecológica suspendida entre los árboles de la selva en Minca. Escucha el río de fondo y duerme bajo un dosel protector. Una experiencia de inmersión en la naturaleza única.',
+    image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?auto=format&fit=crop&w=800&q=80',
+    price: 180000,
+    rating: 4.75,
+    capacity: 2,
+    location: 'Minca, Santa Marta',
+    bedrooms: 1,
+    bathrooms: 1,
+    amenities: ['Eco-Construcción', 'Vista a la Selva', 'WiFi', 'Río Cercano', 'Desayuno Incluido'],
+    featured: false,
+  },
+];

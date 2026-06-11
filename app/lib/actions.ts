@@ -31,13 +31,13 @@ export async function authenticate(
 const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
-    invalid_type_error: 'Please select a customer',
+    message: 'Please select a customer',
   }),
   amount: z.coerce
     .number()
     .gt(0, { message: 'Please enter an amont greater than 0.' }),
   status: z.enum(['pending', 'paid'], {
-    invalid_type_error: 'Please select a status',
+    message: 'Please select a status',
   }),
   date: z.string(),
 });

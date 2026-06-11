@@ -2,21 +2,19 @@
 
 import {
   HomeIcon,
-  Bars4Icon,
-  BuildingOfficeIcon,
   BuildingStorefrontIcon,
-  InboxIcon,
+  BuildingOfficeIcon,
   BuildingLibraryIcon,
+  InboxIcon,
+  Squares2X2Icon,
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import clsx from 'clsx';
 
-// Map of links to display in the side navigation.
-// Depending on the size of the application, this would be stored in a database.
 const links = [
-  { name: 'Inicio', href: '/', icon: Bars4Icon},
-  { name: 'Cabañas', href: '/Cabanas', icon: BuildingStorefrontIcon},
+  { name: 'Ver Todos', href: '/', icon: Squares2X2Icon },
+  { name: 'Cabañas', href: '/Cabanas', icon: BuildingStorefrontIcon },
   { name: 'Casas', href: '/Casas', icon: HomeIcon },
   { name: 'Apartamentos', href: '/Apartamentos', icon: BuildingOfficeIcon },
   { name: 'Fincas', href: '/Fincas', icon: BuildingLibraryIcon },
@@ -25,25 +23,33 @@ const links = [
 
 export default function NavLinks() {
   const pathname = usePathname();
+
   return (
-    <nav>
+    <>
       {links.map((link) => {
         const LinkIcon = link.icon;
+        const isActive = pathname === link.href;
+
         return (
           <Link
             key={link.name}
             href={link.href}
             className={clsx(
-              "flex h-8 grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3",{ 
-                'bg-sky-100 text-blue-600': pathname === link.href,
+              "flex items-center gap-3 px-4 py-3 text-sm font-semibold rounded-xl transition-all duration-200 ease-in-out whitespace-nowrap",
+              {
+                "bg-emerald-550/10 text-emerald-700 bg-emerald-50 border border-emerald-100 shadow-sm shadow-emerald-50/50 scale-[1.02]": isActive,
+                "text-slate-600 hover:text-emerald-600 hover:bg-slate-50 border border-transparent": !isActive,
               }
             )}
           >
-            <LinkIcon className="w-4" />
-            <p className="hidden md:block">{link.name}</p>
+            <LinkIcon className={clsx("w-5 h-5 shrink-0 transition-colors", {
+              "text-emerald-550 text-emerald-600": isActive,
+              "text-slate-400 group-hover:text-emerald-500": !isActive
+            })} />
+            <span>{link.name}</span>
           </Link>
         );
       })}
-    </nav>
+    </>
   );
 }
