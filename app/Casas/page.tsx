@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
 import { getStoredProperties } from '@/app/lib/properties-store';
 import { Property } from '@/app/lib/properties-data';
 import Search from '@/app/ui/search';
 import { useSearchParams } from 'next/navigation';
 
-export default function Page() {
+function CasasPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams ? searchParams.get('query') || '' : '';
   const [properties, setProperties] = useState<Property[]>([]);
@@ -46,7 +46,7 @@ export default function Page() {
     <div className="space-y-6 animate-in fade-in duration-300">
       <div className="border-b border-slate-100 pb-4">
         <h1 className="text-2xl font-black text-slate-800 tracking-tight">Casas</h1>
-        <p className="text-xs text-slate-500 mt-1">Imponentes casas de playa y residencias coloniales de descanso.</p>
+        <p className="text-xs text-slate-500 mt-1">Imponentes casas de playa and residencias coloniales de descanso.</p>
       </div>
 
       <div className="bg-white/80 border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -70,5 +70,17 @@ export default function Page() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+      </div>
+    }>
+      <CasasPageContent />
+    </Suspense>
   );
 }
