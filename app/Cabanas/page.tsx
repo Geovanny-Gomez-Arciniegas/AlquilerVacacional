@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
 import { getStoredProperties } from '@/app/lib/properties-store';
 import { Property } from '@/app/lib/properties-data';
 import Search from '@/app/ui/search';
 import { useSearchParams } from 'next/navigation';
 
-export default function Page() {
+function CabanasPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams ? searchParams.get('query') || '' : '';
   const [properties, setProperties] = useState<Property[]>([]);
@@ -70,5 +70,17 @@ export default function Page() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+      </div>
+    }>
+      <CabanasPageContent />
+    </Suspense>
   );
 }
