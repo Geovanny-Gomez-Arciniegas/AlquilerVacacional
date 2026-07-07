@@ -41,6 +41,13 @@ export default function Header() {
           {/* Menú de Acceso / Dashboard */}
           <div className="flex items-center gap-3">
             <Link
+              href="/host"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-full border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-550/10 hover:bg-emerald-50 hover:scale-[1.02] shadow-sm hover:shadow-emerald-50/50 transition-all cursor-pointer"
+            >
+              <span>🔑 Modo Anfitrión</span>
+            </Link>
+
+            <Link
               href="/dashboard"
               className={clsx(
                 "flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
