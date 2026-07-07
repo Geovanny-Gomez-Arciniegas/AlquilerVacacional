@@ -6,7 +6,7 @@ import SideNav from '@/app/ui/inicio/sidenav';
 
 export default function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname() || '';
-  const isDashboardOrLogin = pathname.startsWith('/dashboard') || pathname.startsWith('/login');
+  const isDashboardOrLogin = pathname.startsWith('/dashboard') || pathname.startsWith('/login') || pathname.startsWith('/host');
 
   if (isDashboardOrLogin) {
     return <>{children}</>;
