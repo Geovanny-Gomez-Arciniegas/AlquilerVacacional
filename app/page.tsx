@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
 import { getStoredProperties } from '@/app/lib/properties-store';
 import { Property } from '@/app/lib/properties-data';
@@ -8,7 +8,7 @@ import Search from '@/app/ui/search';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 import { useSearchParams } from 'next/navigation';
 
-export default function Page() {
+function PageContent() {
   const searchParams = useSearchParams();
   const query = searchParams ? searchParams.get('query') || '' : '';
   const [properties, setProperties] = useState<Property[]>([]);
@@ -22,13 +22,8 @@ export default function Page() {
   if (!isMounted) {
     return (
       <div className="space-y-6 animate-pulse">
-        {/* Skeleton Hero */}
         <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
-        
-        {/* Skeleton Search */}
         <div className="bg-slate-200 rounded-2xl h-14 w-full" />
-        
-        {/* Skeleton Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
             <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
@@ -38,7 +33,6 @@ export default function Page() {
     );
   }
 
-  // Filtrar las propiedades por la búsqueda del usuario (nombre, ubicación o descripción)
   const filteredProperties = properties.filter((property) => {
     if (!query) return true;
     const term = query.toLowerCase();
@@ -51,10 +45,7 @@ export default function Page() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      
-      {/* Sección Hero / Bienvenida Corta */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-md">
-        {/* Adornos de fondo */}
         <div className="absolute right-0 bottom-0 opacity-10 translate-y-12 translate-x-12 w-64 h-64 bg-emerald-400 rounded-full blur-3xl" />
         <div className="absolute left-1/3 top-0 opacity-10 -translate-y-12 w-48 h-48 bg-teal-400 rounded-full blur-2xl" />
 
@@ -72,7 +63,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Barra de Filtros y Búsqueda */}
       <div className="bg-white/80 border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex-1 w-full">
           <Search placeholder="Buscar por nombre, ubicación o características..." />
@@ -82,7 +72,6 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Grid de Alojamientos */}
       {filteredProperties.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProperties.map((property) => (
@@ -96,5 +85,18 @@ export default function Page() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
+        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+      </div>
+    }>
+      <PageContent />
+    </Suspense>
   );
 }
