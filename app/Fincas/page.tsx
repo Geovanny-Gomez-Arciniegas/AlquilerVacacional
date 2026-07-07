@@ -1,16 +1,35 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
-import { properties } from '@/app/lib/properties-data';
+import { getStoredProperties } from '@/app/lib/properties-store';
+import { Property } from '@/app/lib/properties-data';
 import Search from '@/app/ui/search';
+import { useSearchParams } from 'next/navigation';
 
-interface PageProps {
-  searchParams?: Promise<{
-    query?: string;
-  }>;
-}
+export default function Page() {
+  const searchParams = useSearchParams();
+  const query = searchParams ? searchParams.get('query') || '' : '';
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
-export default async function Page(props: PageProps) {
-  const searchParams = await props.searchParams;
-  const query = searchParams?.query || '';
+  useEffect(() => {
+    setProperties(getStoredProperties());
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const filteredProperties = properties.filter((property) => {
     if (property.category !== 'Fincas') return false;
