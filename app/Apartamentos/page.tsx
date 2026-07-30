@@ -6,7 +6,7 @@ import { getStoredProperties } from '@/app/lib/properties-store';
 import { Property } from '@/app/lib/properties-data';
 import Search from '@/app/ui/search';
 import { useSearchParams } from 'next/navigation';
-
+// comentario de prueba
 function ApartamentosPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams ? searchParams.get('query') || '' : '';
