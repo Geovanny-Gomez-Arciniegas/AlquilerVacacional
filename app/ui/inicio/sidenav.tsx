@@ -1,28 +1,25 @@
-import Link from 'next/link';
+'use client';
+
 import NavLinks from '@/app/ui/inicio/nav-links';
-import AcmeLogo from '@/app/ui/acme-logo';
-import { PowerIcon } from '@heroicons/react/24/outline';
-import { signOut } from '@/auth';
+import { Squares2X2Icon } from '@heroicons/react/24/outline';
 
 export default function SideNav() {
   return (
-    <div className="flex h-full flex-col px-3 py-4 md:px-4">
+    <div className="bg-white/80 backdrop-blur-sm border border-slate-100 rounded-2xl p-4 shadow-sm">
+      <div className="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+        <Squares2X2Icon className="w-5 h-5 text-emerald-500" />
+        <h2 className="text-sm font-bold text-slate-800 uppercase tracking-wider">
+          Categorías
+        </h2>
+      </div>
       
-      <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
-        
+      <div className="flex flex-row overflow-x-auto gap-2 md:flex-col md:overflow-visible pb-2 md:pb-0 scrollbar-none">
         <NavLinks />
-        <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
-        <form
-          action={async () => {
-            'use server';
-            await signOut();
-          }}
-        >
-          <button className="flex h-[48px] w-full grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
-            <PowerIcon className="w-6" />
-            <div className="hidden md:block">Sign Out</div>
-          </button>
-        </form>
+      </div>
+      
+      <div className="hidden md:block mt-6 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+        <p>© 2026 EcoBooking CO.</p>
+        <p className="mt-1">Santa Marta - Colombia</p>
       </div>
     </div>
   );

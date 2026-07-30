@@ -180,9 +180,19 @@ const revenue = [
   { month: 'Dec', revenue: 4800 },
 ];
 
+const apartamento = [
+  { id: 1, 
+    nombre: 'Apartamento 1',
+    precioNoche: 2000,
+    descripcion: 'Apartamento en el centro de la ciudad con vistas al mar, a 5 minutos del aeropuerto',
+    capacidad: 4,
+  },
+];
+
 module.exports = {
   users,
   customers,
   invoices,
   revenue,
+  apartamento,
 };

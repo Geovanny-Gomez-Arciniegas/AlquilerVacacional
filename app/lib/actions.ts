@@ -1,11 +1,13 @@
+// use server es una directiva que se le da a las funciones que se exportan en este archivo para que se ejecuten en el servidor y no en el cliente, esto es para que no se envien al cliente y no se puedan ver en el navegador.
 'use server';
 
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
-import {  signIn } from '@/auth';
-import { AuthError } from 'next-auth';
+
+import { z } from 'zod'; // Importamos zod para validar los datos que se envian en el formulario
+import { sql } from '@vercel/postgres'; // Importamos sql para hacer las consultas a la base de datos
+import { revalidatePath } from 'next/cache'; // Importamos revalidatePath para revalidar la pagina de invoices
+import { redirect } from 'next/navigation'; // Importamos redirect para redireccionar al usuario a la pagina de invoices
+import {  signIn } from '@/auth'; // Importamos signIn para autenticar al usuario
+import { AuthError } from 'next-auth'; // Importamos AuthError para manejar los errores de autenticacion
 
 export async function authenticate(
   prevState: string | undefined,
@@ -26,7 +28,7 @@ export async function authenticate(
   }
 }
 
-const FormSchuma = z.object({
+const FormSchema = z.object({
   id: z.string(),
   customerId: z.string({
     invalid_type_error: 'Please select a customer',
@@ -40,8 +42,8 @@ const FormSchuma = z.object({
   date: z.string(),
 });
 
-const CreateInvoice = FormSchuma.omit({ id: true, date: true });
-const UpdateInvoice = FormSchuma.omit({ id: true, date: true });
+const CreateInvoice = FormSchema.omit({ id: true, date: true });
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
 
 // Marcar que todas las funciones que se exporten en este archivo son asincronas y son de SERVIDOR

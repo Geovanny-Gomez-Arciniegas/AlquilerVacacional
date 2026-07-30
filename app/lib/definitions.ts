@@ -31,6 +31,14 @@ export type Revenue = {
   revenue: number;
 };
 
+export type Apartamento = {
+  id: number;
+  nombre: string;
+  precioNoche: number;
+  descripcion: string;
+  capacidad: number;
+};
+
 export type LatestInvoice = {
   id: string;
   name: string;

@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import { useSearchParams, usePathname, useRouter } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce'; // para evitar que se hagan muchas peticiones a la base de datos con cada tecla que se presiona
+import { useDebouncedCallback } from 'use-debounce'; // se uasara la biblioteca "use-debounce" que se encuentra en la carpetas modulos de node js de para evitar que se hagan muchas peticiones a la base de datos con cada tecla que se presiona
 
 export default function Search({ placeholder }: { placeholder: string }) {
   const searchParams = useSearchParams();
@@ -10,7 +10,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
   const { replace } = useRouter();
 
   const handleSearch = useDebouncedCallback((term: string) => {
-    const params = new URLSearchParams(searchParams);
+    const params = new URLSearchParams(searchParams.toString());
     params.set('page', '1');
     if (term) {
       params.set('query', term);
