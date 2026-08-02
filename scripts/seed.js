@@ -57,6 +57,11 @@ async function seedProperties(client) {
         country VARCHAR(100) NOT NULL,
         price_per_night DECIMAL(10, 2) NOT NULL,
         max_guests INT NOT NULL,
+        category VARCHAR(100) NOT NULL,
+        bedrooms INT NOT NULL,
+        bathrooms INT NOT NULL,
+        amenities TEXT[] NOT NULL,
+        rating DECIMAL(3, 1) DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT fk_host
           FOREIGN KEY(host_id) 
@@ -70,8 +75,8 @@ async function seedProperties(client) {
     const insertedProperties = await Promise.all(
       properties.map(
         (prop) => client.sql`
-        INSERT INTO properties (id, host_id, title, description, city, country, price_per_night, max_guests)
-        VALUES (${prop.id}, ${prop.host_id}, ${prop.title}, ${prop.description}, ${prop.city}, ${prop.country}, ${prop.price_per_night}, ${prop.max_guests})
+        INSERT INTO properties (id, host_id, title, description, city, country, price_per_night, max_guests, category, bedrooms, bathrooms, amenities, rating)
+        VALUES (${prop.id}, ${prop.host_id}, ${prop.title}, ${prop.description}, ${prop.city}, ${prop.country}, ${prop.price_per_night}, ${prop.max_guests}, ${prop.category}, ${prop.bedrooms}, ${prop.bathrooms}, ${prop.amenities}, ${prop.rating})
         ON CONFLICT (id) DO NOTHING;
       `,
       ),

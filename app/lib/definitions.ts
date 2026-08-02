@@ -19,8 +19,13 @@ export type Property = {
   description: string;
   city: string;
   country: string;
+  category: string;
   price_per_night: number;
   max_guests: number;
+  bedrooms: number;
+  bathrooms: number;
+  amenities: string[];
+  rating: number;
   created_at: string;
 };
 

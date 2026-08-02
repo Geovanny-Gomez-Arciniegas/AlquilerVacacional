@@ -26,8 +26,13 @@ export async function fetchFilteredProperties(query: string, currentPage: number
         p.title, 
         p.city, 
         p.country, 
+        p.category,
         p.price_per_night, 
         p.max_guests,
+        p.bedrooms,
+        p.bathrooms,
+        p.amenities,
+        p.rating,
         u.name AS host_name,
         i.url AS image_url
       FROM properties p

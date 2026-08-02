@@ -33,6 +33,11 @@ const properties = [
     country: 'Colombia',
     price_per_night: 120.50,
     max_guests: 4,
+    category: 'Cabaña',
+    bedrooms: 2,
+    bathrooms: 1,
+    amenities: ['Wifi', 'Piscina', 'Cocina', 'Vista a la montaña'],
+    rating: 4.8,
   },
   {
     id: '76d65c26-f784-44a2-ac19-586678f7c2f2',
@@ -43,6 +48,11 @@ const properties = [
     country: 'Colombia',
     price_per_night: 200.00,
     max_guests: 6,
+    category: 'Apartamento',
+    bedrooms: 3,
+    bathrooms: 2,
+    amenities: ['Aire acondicionado', 'Frente a la playa', 'Wifi', 'Piscina'],
+    rating: 4.9,
   }
 ];
 
