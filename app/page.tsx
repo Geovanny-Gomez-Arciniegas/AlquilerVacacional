@@ -1,47 +1,18 @@
-'use client';
-
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
-import { getStoredProperties } from '@/app/lib/properties-store';
-import { Property } from '@/app/lib/properties-data';
+import { fetchFilteredProperties, fetchPropertiesPages } from '@/app/lib/data';
 import Search from '@/app/ui/search';
 import { SparklesIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
 
-function PageContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams ? searchParams.get('query') || '' : '';
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setProperties(getStoredProperties());
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
-        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const filteredProperties = properties.filter((property) => {
-    if (!query) return true;
-    const term = query.toLowerCase();
-    return (
-      property.name.toLowerCase().includes(term) ||
-      property.location.toLowerCase().includes(term) ||
-      property.description.toLowerCase().includes(term)
-    );
-  });
+// Este es el componente que se encarga de buscar en la BD (Server Component)
+async function PageContent({
+  query,
+  currentPage,
+}: {
+  query: string;
+  currentPage: number;
+}) {
+  const properties = await fetchFilteredProperties(query, currentPage);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -52,51 +23,70 @@ function PageContent() {
         <div className="relative z-10 max-w-2xl space-y-3">
           <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
             <SparklesIcon className="w-4 h-4" />
-            <span>Destino Santa Marta</span>
+            <span>Destino Ideal</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-            Descubre alojamientos únicos cerca del mar
+            Descubre alojamientos únicos para tu próxima escapada
           </h1>
           <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-light">
-            Encuentra cabañas rústicas, penthouses modernos y habitaciones acogedoras en los mejores sectores de la bahía y la Sierra Nevada.
+            Encuentra cabañas rústicas, apartamentos modernos y habitaciones acogedoras en los mejores destinos.
           </p>
         </div>
       </div>
 
       <div className="bg-white/80 border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="flex-1 w-full">
-          <Search placeholder="Buscar por nombre, ubicación o características..." />
+          <Search placeholder="Buscar por ciudad, título o características..." />
         </div>
         <div className="text-xs text-slate-500 font-semibold shrink-0">
-          Mostrando <span className="text-slate-800 font-bold">{filteredProperties.length}</span> de <span className="text-slate-800 font-bold">{properties.length}</span> alojamientos
+          Resultados: <span className="text-slate-800 font-bold">{properties.length}</span> alojamientos
         </div>
       </div>
 
-      {filteredProperties.length > 0 ? (
+      {properties.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
+          {properties.map((property) => (
             <CardInicio key={property.id} property={property} />
           ))}
         </div>
       ) : (
         <div className="bg-white/80 border border-slate-100 rounded-2xl p-12 text-center max-w-md mx-auto space-y-3">
           <p className="text-slate-400 text-sm">No encontramos alojamientos que coincidan con tu búsqueda.</p>
-          <p className="text-xs text-slate-400">Intenta buscando términos diferentes como "Minca", "Vista al Mar" o "Piscina".</p>
+          <p className="text-xs text-slate-400">Intenta buscando términos diferentes como la ciudad de destino.</p>
         </div>
       )}
     </div>
   );
 }
 
-export default function Page() {
+// Next.js pasa searchParams a los Server Components de tipo Page por defecto
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}) {
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+
   return (
-    <Suspense fallback={
-      <div className="space-y-6 animate-pulse">
-        <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
-        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
-      </div>
-    }>
-      <PageContent />
+    <Suspense 
+      key={query + currentPage} 
+      fallback={
+        <div className="space-y-6 animate-pulse">
+          <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
+          <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <PageContent query={query} currentPage={currentPage} />
     </Suspense>
   );
 }

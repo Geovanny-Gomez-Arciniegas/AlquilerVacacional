@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { Property } from '@/app/lib/properties-data';
+import { PropertyWithPrimaryImage } from '@/app/lib/definitions';
 import BookingModal from '@/app/ui/inicio/booking-modal';
 import { 
   StarIcon, 
@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/solid';
 
 interface CardInicioProps {
-  property: Property;
+  property: PropertyWithPrimaryImage;
 }
 
 export function CardInicio({ property }: CardInicioProps) {
@@ -26,28 +26,38 @@ export function CardInicio({ property }: CardInicioProps) {
     }).format(val);
   };
 
+  const amenities = property.amenities || [];
+
   return (
     <>
       <div className="group bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-[3px] transition-all duration-350 flex flex-col h-full">
         
         {/* Imagen del Alojamiento */}
         <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100">
-          <img
-            src={property.image}
-            alt={property.name}
-            className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
-          />
+          {property.image_url ? (
+            <img
+              src={property.image_url}
+              alt={property.title}
+              className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
+            />
+          ) : (
+            <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
+              Sin imagen
+            </div>
+          )}
           
           {/* Calificación en estrella flotante */}
-          <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full shadow-sm text-xs font-bold text-slate-800">
-            <StarIcon className="w-3.5 h-3.5 text-amber-500" />
-            <span>{property.rating.toFixed(1)}</span>
-          </div>
+          {property.rating && (
+            <div className="absolute top-3 right-3 flex items-center gap-1 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-full shadow-sm text-xs font-bold text-slate-800">
+              <StarIcon className="w-3.5 h-3.5 text-amber-500" />
+              <span>{Number(property.rating).toFixed(1)}</span>
+            </div>
+          )}
 
           {/* Ubicación flotante */}
           <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1 bg-slate-900/60 backdrop-blur-md rounded-full text-[11px] font-semibold text-white">
             <MapPinIcon className="w-3 h-3 text-emerald-400" />
-            <span className="line-clamp-1">{property.location.split(',')[0]}</span>
+            <span className="line-clamp-1">{property.city}</span>
           </div>
         </div>
 
@@ -61,13 +71,13 @@ export function CardInicio({ property }: CardInicioProps) {
               </span>
               <span className="flex items-center gap-1 text-slate-500 font-medium">
                 <UsersIcon className="w-3.5 h-3.5 text-slate-400" />
-                Hasta {property.capacity} huéspedes
+                Hasta {property.max_guests} huéspedes
               </span>
             </div>
 
             {/* Título */}
             <h3 className="text-base font-extrabold text-slate-800 line-clamp-1 leading-snug group-hover:text-emerald-600 transition-colors">
-              {property.name}
+              {property.title}
             </h3>
 
             {/* Descripción */}
@@ -84,7 +94,7 @@ export function CardInicio({ property }: CardInicioProps) {
             
             {/* Amenities rápidos */}
             <div className="flex flex-wrap gap-1 pt-1.5">
-              {property.amenities.slice(0, 3).map((amenity) => (
+              {amenities.slice(0, 3).map((amenity) => (
                 <span 
                   key={amenity} 
                   className="text-[10px] text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md border border-slate-100"
@@ -92,9 +102,9 @@ export function CardInicio({ property }: CardInicioProps) {
                   {amenity}
                 </span>
               ))}
-              {property.amenities.length > 3 && (
+              {amenities.length > 3 && (
                 <span className="text-[10px] text-slate-400 bg-slate-50 px-2 py-0.5 rounded-md border border-dashed border-slate-200">
-                  +{property.amenities.length - 3} más
+                  +{amenities.length - 3} más
                 </span>
               )}
             </div>
@@ -104,8 +114,8 @@ export function CardInicio({ property }: CardInicioProps) {
           <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
             <div className="flex flex-col">
               <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Precio / Noche</span>
-              <span className="text-lg font-extrabold text-slate-850 text-slate-850 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                {formatPrice(property.price)}
+              <span className="text-lg font-extrabold text-slate-800 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                {formatPrice(property.price_per_night)}
               </span>
             </div>
             
@@ -120,8 +130,12 @@ export function CardInicio({ property }: CardInicioProps) {
       </div>
 
       {/* Modal interactivo */}
+      {/* 
+        NOTA: En la próxima refactorización BookingModal también
+        debe aceptar PropertyWithPrimaryImage en lugar de Property
+      */}
       <BookingModal 
-        property={property}
+        property={property as any} 
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
       />
