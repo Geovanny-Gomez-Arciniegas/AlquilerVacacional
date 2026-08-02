@@ -60,19 +60,19 @@ const images = [
   {
     id: '126eed9c-c90c-4ef6-a4a8-fcf7408d3c66',
     property_id: properties[0].id,
-    url: 'https://images.ecobooking.com/cabana1-main.jpg',
+    url: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=600&auto=format&fit=crop',
     is_primary: true,
   },
   {
     id: 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9',
     property_id: properties[0].id,
-    url: 'https://images.ecobooking.com/cabana1-room.jpg',
+    url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop',
     is_primary: false,
   },
   {
     id: '13D07535-C59E-4157-A011-F8D2EF4E0CBB',
     property_id: properties[1].id,
-    url: 'https://images.ecobooking.com/apto1-main.jpg',
+    url: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=600&auto=format&fit=crop',
     is_primary: true,
   }
 ];

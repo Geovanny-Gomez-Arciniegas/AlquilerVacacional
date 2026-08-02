@@ -15,7 +15,7 @@ const ITEMS_PER_PAGE = 6;
 // PROPERTIES
 // ==========================================
 
-export async function fetchFilteredProperties(query: string, currentPage: number) {
+export async function fetchFilteredProperties(query: string, currentPage: number, category?: string) {
   noStore();
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
@@ -39,9 +39,8 @@ export async function fetchFilteredProperties(query: string, currentPage: number
       LEFT JOIN users u ON p.host_id = u.id
       LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
       WHERE
-        p.title ILIKE ${`%${query}%`} OR
-        p.city ILIKE ${`%${query}%`} OR
-        p.country ILIKE ${`%${query}%`}
+        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category || ''}%`}) AND
+        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`})
       ORDER BY p.created_at DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
@@ -53,16 +52,15 @@ export async function fetchFilteredProperties(query: string, currentPage: number
   }
 }
 
-export async function fetchPropertiesPages(query: string) {
+export async function fetchPropertiesPages(query: string, category?: string) {
   noStore();
   try {
     const count = await sql`
       SELECT COUNT(*)
       FROM properties p
       WHERE
-        p.title ILIKE ${`%${query}%`} OR
-        p.city ILIKE ${`%${query}%`} OR
-        p.country ILIKE ${`%${query}%`}
+        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category || ''}%`}) AND
+        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`})
     `;
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);

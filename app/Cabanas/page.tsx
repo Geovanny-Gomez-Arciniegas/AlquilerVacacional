@@ -1,46 +1,17 @@
-'use client';
-
-import { useState, useEffect, Suspense } from 'react';
+import { Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
-import { getStoredProperties } from '@/app/lib/properties-store';
-import { Property } from '@/app/lib/properties-data';
+import { fetchFilteredProperties } from '@/app/lib/data';
 import Search from '@/app/ui/search';
-import { useSearchParams } from 'next/navigation';
 
-function CabanasPageContent() {
-  const searchParams = useSearchParams();
-  const query = searchParams ? searchParams.get('query') || '' : '';
-  const [properties, setProperties] = useState<Property[]>([]);
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setProperties(getStoredProperties());
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
-          ))}
-        </div>
-      </div>
-    );
-  }
-
-  const filteredProperties = properties.filter((property) => {
-    if (property.category !== 'Cabañas') return false;
-    if (!query) return true;
-    const term = query.toLowerCase();
-    return (
-      property.name.toLowerCase().includes(term) ||
-      property.location.toLowerCase().includes(term) ||
-      property.description.toLowerCase().includes(term)
-    );
-  });
+async function CabanasPageContent({
+  query,
+  currentPage,
+}: {
+  query: string;
+  currentPage: number;
+}) {
+  // Filtramos por la categoría "Cabaña"
+  const properties = await fetchFilteredProperties(query, currentPage, 'Cabaña');
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -54,13 +25,13 @@ function CabanasPageContent() {
           <Search placeholder="Buscar dentro de cabañas..." />
         </div>
         <div className="text-xs text-slate-500 font-semibold shrink-0">
-          Encontradas: <span className="text-slate-800 font-bold">{filteredProperties.length}</span> cabañas
+          Encontradas: <span className="text-slate-800 font-bold">{properties.length}</span> cabañas
         </div>
       </div>
 
-      {filteredProperties.length > 0 ? (
+      {properties.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredProperties.map((property) => (
+          {properties.map((property) => (
             <CardInicio key={property.id} property={property} />
           ))}
         </div>
@@ -73,14 +44,32 @@ function CabanasPageContent() {
   );
 }
 
-export default function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}) {
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+
   return (
-    <Suspense fallback={
-      <div className="space-y-6 animate-pulse">
-        <div className="bg-slate-200 rounded-2xl h-14 w-full" />
-      </div>
-    }>
-      <CabanasPageContent />
+    <Suspense 
+      key={query + currentPage}
+      fallback={
+        <div className="space-y-6 animate-pulse">
+          <div className="bg-slate-200 rounded-2xl h-14 w-full" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-slate-200 rounded-3xl aspect-[4/3] w-full" />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <CabanasPageContent query={query} currentPage={currentPage} />
     </Suspense>
   );
 }
