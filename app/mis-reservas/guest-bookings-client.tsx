@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { FormattedBooking } from '@/app/lib/definitions';
 import { cancelBooking } from '@/app/lib/actions';
+import { formatDateSpanish } from '@/app/lib/utils';
 import { 
   CalendarIcon, 
   MapPinIcon, 
@@ -30,8 +31,7 @@ export default function GuestBookingsClient({ bookings }: GuestBookingsClientPro
   };
 
   const formatDate = (dateStr: string) => {
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+    return formatDateSpanish(dateStr);
   };
 
   const handleCancel = async (bookingId: string) => {

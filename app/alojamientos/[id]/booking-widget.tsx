@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBooking } from '@/app/lib/actions';
+import { formatDateSpanish } from '@/app/lib/utils';
 import { CheckCircleIcon, CalendarIcon, UserGroupIcon } from '@heroicons/react/24/outline';
 
 interface BookingWidgetProps {
@@ -91,8 +92,8 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
           Tu estadía de <strong>{nights} {nights === 1 ? 'noche' : 'noches'}</strong> ha sido registrada con éxito.
         </p>
         <div className="bg-white/80 p-4 rounded-2xl border border-emerald-100 text-left text-xs space-y-2 text-slate-700">
-          <div><span className="font-semibold text-slate-900">Llegada:</span> {startDate}</div>
-          <div><span className="font-semibold text-slate-900">Salida:</span> {endDate}</div>
+          <div><span className="font-semibold text-slate-900">Llegada:</span> {formatDateSpanish(startDate)}</div>
+          <div><span className="font-semibold text-slate-900">Salida:</span> {formatDateSpanish(endDate)}</div>
           <div><span className="font-semibold text-slate-900">Total pagado:</span> {formatPrice(totalPrice)}</div>
         </div>
         <div className="pt-2 flex flex-col gap-2">
@@ -132,7 +133,7 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
       <div className="space-y-4">
         <div className="border border-slate-300 rounded-2xl overflow-hidden focus-within:ring-2 focus-within:ring-emerald-500 focus-within:border-emerald-500 transition-all">
           <div className="flex divide-x divide-slate-300 border-b border-slate-300">
-            <div className="p-3 flex-1 bg-slate-50 hover:bg-slate-100/80 transition-colors">
+            <div className="p-3 flex-1 min-w-0 bg-slate-50 hover:bg-slate-100/80 transition-colors">
               <label className="block text-[10px] uppercase font-bold text-slate-700 tracking-wider">Llegada</label>
               <input
                 type="date"
@@ -143,7 +144,7 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
                 required
               />
             </div>
-            <div className="p-3 flex-1 bg-slate-50 hover:bg-slate-100/80 transition-colors">
+            <div className="p-3 flex-1 min-w-0 bg-slate-50 hover:bg-slate-100/80 transition-colors">
               <label className="block text-[10px] uppercase font-bold text-slate-700 tracking-wider">Salida</label>
               <input
                 type="date"
