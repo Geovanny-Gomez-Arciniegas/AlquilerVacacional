@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import Image from 'next/image';
 import { PropertyWithPrimaryImage } from '@/app/lib/definitions';
 import BookingModal from '@/app/ui/inicio/booking-modal';
@@ -33,12 +34,12 @@ export function CardInicio({ property }: CardInicioProps) {
       <div className="group bg-white rounded-3xl overflow-hidden border border-slate-100 hover:border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-[3px] transition-all duration-350 flex flex-col h-full">
         
         {/* Imagen del Alojamiento */}
-        <div className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100">
+        <Link href={`/alojamientos/${property.id}`} className="relative w-full aspect-[4/3] overflow-hidden bg-slate-100 block group/img">
           {property.image_url ? (
             <img
               src={property.image_url}
               alt={property.title}
-              className="w-full h-full object-cover group-hover:scale-106 transition-transform duration-500"
+              className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-500"
             />
           ) : (
             <div className="w-full h-full bg-slate-200 flex items-center justify-center text-slate-400">
@@ -59,7 +60,7 @@ export function CardInicio({ property }: CardInicioProps) {
             <MapPinIcon className="w-3 h-3 text-emerald-400" />
             <span className="line-clamp-1">{property.city}</span>
           </div>
-        </div>
+        </Link>
 
         {/* Detalles e Información */}
         <div className="p-5 flex-1 flex flex-col justify-between">
@@ -76,9 +77,11 @@ export function CardInicio({ property }: CardInicioProps) {
             </div>
 
             {/* Título */}
-            <h3 className="text-base font-extrabold text-slate-800 line-clamp-1 leading-snug group-hover:text-emerald-600 transition-colors">
-              {property.title}
-            </h3>
+            <Link href={`/alojamientos/${property.id}`} className="hover:text-emerald-600 transition-colors">
+              <h3 className="text-base font-extrabold text-slate-800 line-clamp-1 leading-snug group-hover:text-emerald-600 transition-colors">
+                {property.title}
+              </h3>
+            </Link>
 
             {/* Descripción */}
             <p className="text-xs text-slate-500 leading-relaxed line-clamp-2">

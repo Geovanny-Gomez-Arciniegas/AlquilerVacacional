@@ -75,4 +75,29 @@ export type FormattedBooking = Booking & {
   property_city: string;
   guest_name: string;
   guest_email: string;
+  property_image?: string;
 };
+
+export type ReviewWithGuest = Review & {
+  guest_name: string;
+};
+
+export type Revenue = {
+  month: string;
+  revenue: number;
+};
+
+export type CustomersTableType = {
+  id: string;
+  name: string;
+  email: string;
+  image_url: string;
+  total_invoices: number;
+  total_pending: string;
+  total_paid: string;
+};
+
+export type FormattedCustomersTable = CustomersTableType;
+
+
+

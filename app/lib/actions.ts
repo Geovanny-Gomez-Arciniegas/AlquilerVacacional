@@ -1,156 +1,272 @@
-// use server es una directiva que se le da a las funciones que se exportan en este archivo para que se ejecuten en el servidor y no en el cliente, esto es para que no se envien al cliente y no se puedan ver en el navegador.
 'use server';
 
+import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
 
-import { z } from 'zod'; // Importamos zod para validar los datos que se envian en el formulario
-import { sql } from '@vercel/postgres'; // Importamos sql para hacer las consultas a la base de datos
-import { revalidatePath } from 'next/cache'; // Importamos revalidatePath para revalidar la pagina de invoices
-import { redirect } from 'next/navigation'; // Importamos redirect para redireccionar al usuario a la pagina de invoices
-import {  signIn } from '@/auth'; // Importamos signIn para autenticar al usuario
-import { AuthError } from 'next-auth'; // Importamos AuthError para manejar los errores de autenticacion
+const DEFAULT_IMAGES: Record<string, string> = {
+  'Cabañas': 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
+  'Casas': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+  'Apartamentos': 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+  'Fincas': 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+  'Habitaciones': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+};
+
+export async function createProperty(formData: FormData, hostId: string) {
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string;
+  const category = formData.get('category') as string;
+  const location = formData.get('location') as string;
+  const price = Number(formData.get('price'));
+  const capacity = Number(formData.get('capacity'));
+  const bedrooms = Number(formData.get('bedrooms'));
+  const bathrooms = Number(formData.get('bathrooms'));
+  const amenities = formData.getAll('amenities') as string[];
+  const useDefaultImage = formData.get('useDefaultImage') === 'true';
+  const customImageUrl = formData.get('image') as string;
+  
+  const finalImage = useDefaultImage 
+    ? (DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas'])
+    : (customImageUrl || DEFAULT_IMAGES[category]);
+
+  const city = location;
+  const country = 'Colombia'; // Default para simplificar
+
+  try {
+    const insertedProperty = await sql`
+      INSERT INTO properties (host_id, title, description, city, country, category, price_per_night, max_guests, bedrooms, bathrooms, amenities, rating)
+      VALUES (${hostId}, ${title}, ${description}, ${city}, ${country}, ${category}, ${price}, ${capacity}, ${bedrooms}, ${bathrooms}, ${`{${amenities.join(',')}}`}, 5.0)
+      RETURNING id
+    `;
+    
+    const propertyId = insertedProperty.rows[0].id;
+    
+    // Insert primary image
+    await sql`
+      INSERT INTO images (property_id, url, is_primary)
+      VALUES (${propertyId}, ${finalImage}, true)
+    `;
+
+    revalidatePath('/host');
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to create property.');
+  }
+}
+
+export async function updateProperty(id: string, formData: FormData) {
+  const title = formData.get('title') as string;
+  const description = formData.get('description') as string;
+  const category = formData.get('category') as string;
+  const location = formData.get('location') as string;
+  const price = Number(formData.get('price'));
+  const capacity = Number(formData.get('capacity'));
+  const bedrooms = Number(formData.get('bedrooms'));
+  const bathrooms = Number(formData.get('bathrooms'));
+  const amenities = formData.getAll('amenities') as string[];
+  
+  const city = location;
+  const country = 'Colombia'; // Default para simplificar
+
+  try {
+    await sql`
+      UPDATE properties
+      SET 
+        title = ${title},
+        description = ${description},
+        city = ${city},
+        country = ${country},
+        category = ${category},
+        price_per_night = ${price},
+        max_guests = ${capacity},
+        bedrooms = ${bedrooms},
+        bathrooms = ${bathrooms},
+        amenities = ${`{${amenities.join(',')}}`}
+      WHERE id = ${id}
+    `;
+
+    // Optionally update image if provided
+    const useDefaultImage = formData.get('useDefaultImage') === 'true';
+    const customImageUrl = formData.get('image') as string;
+    
+    if (useDefaultImage || customImageUrl) {
+      const finalImage = useDefaultImage 
+        ? (DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas'])
+        : customImageUrl;
+      
+      // Attempt to update the primary image
+      const updateImg = await sql`
+        UPDATE images
+        SET url = ${finalImage}
+        WHERE property_id = ${id} AND is_primary = true
+      `;
+      
+      // If no primary image existed, create it
+      if (updateImg.rowCount === 0) {
+        await sql`
+          INSERT INTO images (property_id, url, is_primary)
+          VALUES (${id}, ${finalImage}, true)
+        `;
+      }
+    }
+
+    revalidatePath('/host');
+    revalidatePath('/');
+    revalidatePath(`/alojamientos/${id}`);
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to update property.');
+  }
+}
+
+export async function deleteProperty(id: string) {
+  try {
+    await sql`DELETE FROM properties WHERE id = ${id}`;
+    revalidatePath('/host');
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to delete property.');
+  }
+}
+
+export async function simulateBooking(hostId: string) {
+  try {
+    // 1. Get a random property for this host
+    const propertiesData = await sql`SELECT id, price_per_night FROM properties WHERE host_id = ${hostId}`;
+    if (propertiesData.rows.length === 0) return;
+    
+    const randomProp = propertiesData.rows[Math.floor(Math.random() * propertiesData.rows.length)];
+    
+    // 2. Get a random guest (just get any user who is a guest)
+    const guestsData = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 10`;
+    let guestId = null;
+    if (guestsData.rows.length > 0) {
+      guestId = guestsData.rows[Math.floor(Math.random() * guestsData.rows.length)].id;
+    } else {
+      // If no guest found, just pick any user
+      const usersData = await sql`SELECT id FROM users LIMIT 10`;
+      if (usersData.rows.length > 0) {
+        guestId = usersData.rows[Math.floor(Math.random() * usersData.rows.length)].id;
+      }
+    }
+    
+    if (!guestId) return;
+
+    // 3. Generate random nights and dates
+    const nights = Math.floor(Math.random() * 5) + 2;
+    const totalPrice = randomProp.price_per_night * nights;
+    
+    const today = new Date();
+    const futureDays = Math.floor(Math.random() * 15) + 1;
+    const checkInDate = new Date(today);
+    checkInDate.setDate(today.getDate() + futureDays);
+    const checkOutDate = new Date(checkInDate);
+    checkOutDate.setDate(checkInDate.getDate() + nights);
+    
+    const padZero = (n: number) => String(n).padStart(2, '0');
+    const formatDate = (d: Date) => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${padZero(d.getDate())}`;
+    
+    const statuses = ['confirmed', 'pending', 'cancelled'];
+    const status = statuses[Math.floor(Math.random() * statuses.length)];
+
+    await sql`
+      INSERT INTO bookings (property_id, guest_id, start_date, end_date, total_price, status)
+      VALUES (${randomProp.id}, ${guestId}, ${formatDate(checkInDate)}, ${formatDate(checkOutDate)}, ${totalPrice}, ${status})
+    `;
+    
+    revalidatePath('/host');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to simulate booking.');
+  }
+}
+
+export async function createBooking(formData: FormData) {
+  const propertyId = formData.get('propertyId') as string;
+  const startDate = formData.get('startDate') as string;
+  const endDate = formData.get('endDate') as string;
+  const totalPrice = Number(formData.get('totalPrice'));
+  let guestId = formData.get('guestId') as string;
+
+  if (!guestId) {
+    const guestUser = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 1`;
+    guestId = guestUser.rows.length > 0 ? guestUser.rows[0].id : 'e8b995cd-4567-4dc2-bccd-671e3db4a451';
+  }
+
+  try {
+    await sql`
+      INSERT INTO bookings (property_id, guest_id, start_date, end_date, total_price, status)
+      VALUES (${propertyId}, ${guestId}, ${startDate}, ${endDate}, ${totalPrice}, 'confirmed')
+    `;
+
+    revalidatePath('/host');
+    revalidatePath('/mis-reservas');
+    revalidatePath(`/alojamientos/${propertyId}`);
+    return { success: true };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to create booking.');
+  }
+}
+
+export async function cancelBooking(bookingId: string) {
+  try {
+    await sql`
+      UPDATE bookings
+      SET status = 'cancelled'
+      WHERE id = ${bookingId}
+    `;
+
+    revalidatePath('/host');
+    revalidatePath('/mis-reservas');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to cancel booking.');
+  }
+}
+
+export async function createReview(formData: FormData) {
+  const propertyId = formData.get('propertyId') as string;
+  const rating = Number(formData.get('rating'));
+  const comment = formData.get('comment') as string;
+  let guestId = formData.get('guestId') as string;
+
+  if (!guestId) {
+    const guestUser = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 1`;
+    guestId = guestUser.rows.length > 0 ? guestUser.rows[0].id : 'e8b995cd-4567-4dc2-bccd-671e3db4a451';
+  }
+
+  try {
+    await sql`
+      INSERT INTO reviews (property_id, guest_id, rating, comment)
+      VALUES (${propertyId}, ${guestId}, ${rating}, ${comment})
+    `;
+
+    const avgData = await sql`
+      SELECT AVG(rating) as avg_rating FROM reviews WHERE property_id = ${propertyId}
+    `;
+    const newAvg = Number(avgData.rows[0].avg_rating) || rating;
+
+    await sql`
+      UPDATE properties
+      SET rating = ${newAvg}
+      WHERE id = ${propertyId}
+    `;
+
+    revalidatePath(`/alojamientos/${propertyId}`);
+    revalidatePath('/');
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to create review.');
+  }
+}
 
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  try {
-    await signIn('credentials', formData);
-  } catch (error) {
-    if (error instanceof AuthError) {
-      switch (error.type) {
-        case 'CredentialsSignin':
-          return 'Invalid credentials.'; // Handle sign in errors
-        default:
-          return 'Something went wrong.'; // Handle other errors
-      }
-    }
-    throw error;
-  }
+  return undefined;
 }
 
-const FormSchema = z.object({
-  id: z.string(),
-  customerId: z.string({
-    invalid_type_error: 'Please select a customer',
-  }),
-  amount: z.coerce
-    .number()
-    .gt(0, { message: 'Please enter an amont greater than 0.' }),
-  status: z.enum(['pending', 'paid'], {
-    invalid_type_error: 'Please select a status',
-  }),
-  date: z.string(),
-});
 
-const CreateInvoice = FormSchema.omit({ id: true, date: true });
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
-
-
-// Marcar que todas las funciones que se exporten en este archivo son asincronas y son de SERVIDOR
-// y por lo tanto no se ejecutan ni se envian al cliente
-
-// This is temporary until @types/react-dom is updated
-
-export type State = {
-  error?: {
-    customerId?: string[];
-    amount?: string[];
-    status?: string[];
-  };
-  message?: string | null;
-};
-
-export async function createInvoice(prevState: State, formData: FormData) {
-  // Validate form fields using Zod
-  const validatedFields = CreateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-
-  // If form validation fails, return errors early. Otherwise, continue.
-  if (!validatedFields.success) {
-    return {
-      error: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Create Invoice',
-    };
-  }
-
-  // Prepare data for insertion into database
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
-
-  // Con el siguiente codigo Sql se inserta un nuevo registro en la tabla invoices
-  try {
-    await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-    `;
-  } catch (error) {
-    // If database error ocurs, return a more specific error message
-    return {
-      message: 'Database Error: Failed to Create Invoice',
-    };
-  }
-  // Con este codigo revalidamos la pagina de invoices para que se actualice la informacion
-  // haciendo una petición al servidor y no al cache del navegador.
-  revalidatePath('/dashboard/invoices');
-
-  // Con este codigo redireccionamos al usuario a la pagina de invoices
-  redirect('/dashboard/invoices');
-};
-
-// const rawFormData = Object.fromEntries(formData.entries()) // Este lo implemente para tratar de resolver el problema de que no se enviaba el formdata 
-
-// const rawFormData = Object.fromEntries(formData.entries()) // Este lo implemente para tratar de resolver el problema de que no se enviaba el formdata
-
-export async function updateInvoice(
-  id: string, 
-  prevState: State,
-  formData: FormData
-  ) {
-  const validatedFields = UpdateInvoice.safeParse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      error: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to Update Invoice',
-    };
-  }
-
-  const { customerId, amount, status } = validatedFields.data;
-  const amountInCents = amount * 100;
-
-  try {
-    await sql`
-      UPDATE invoices
-      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-      WHERE id = ${id}
-    `;
-  } catch (error) {
-    return { message: 'Database Error: Failed to Update Invoice' };
-  }
-
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-};
-
-export async function deleteInvoice(id: string) {
-  try {
-    await sql`
-      DELETE FROM invoices
-      WHERE id = ${id}
-    `;
-    revalidatePath('/dashboard/invoices');
-
-    return { message: 'Invoice Deleted' };
-  } catch (error) {
-    return { message: 'Database Error: Failed to Delete Invoice' };
-  }
-
-};
