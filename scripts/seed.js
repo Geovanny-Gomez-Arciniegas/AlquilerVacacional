@@ -208,6 +208,10 @@ async function seedReviews(client) {
 async function main() {
   const client = await db.connect();
 
+  console.log('Borrando tablas antiguas para reiniciar la base de datos...');
+  await client.sql`DROP TABLE IF EXISTS reviews, bookings, images, properties, users, customers, invoices, revenue CASCADE;`;
+  console.log('Tablas antiguas borradas.');
+
   await seedUsers(client);
   await seedProperties(client);
   await seedImages(client);
