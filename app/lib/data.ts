@@ -7,6 +7,7 @@ import {
   Image,
   FormattedBooking,
   ReviewWithGuest,
+  PropertyFilters,
 } from './definitions';
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -16,8 +17,39 @@ const ITEMS_PER_PAGE = 6;
 // PROPERTIES
 // ==========================================
 
-export async function fetchFilteredProperties(query: string, currentPage: number, category?: string) {
+export async function fetchFilteredProperties(
+  queryOrFilters: string | PropertyFilters,
+  currentPage: number = 1,
+  categoryParam?: string
+) {
   noStore();
+  
+  let query = '';
+  let category = categoryParam || '';
+  let minPrice = 0;
+  let maxPrice = 999999999;
+  let guests = 0;
+  let bedrooms = 0;
+  let bathrooms = 0;
+  let amenities: string[] = [];
+  let startDate = '';
+  let endDate = '';
+
+  if (typeof queryOrFilters === 'object' && queryOrFilters !== null) {
+    query = queryOrFilters.query || '';
+    category = queryOrFilters.category || category || '';
+    minPrice = queryOrFilters.minPrice || 0;
+    maxPrice = queryOrFilters.maxPrice || 999999999;
+    guests = queryOrFilters.guests || 0;
+    bedrooms = queryOrFilters.bedrooms || 0;
+    bathrooms = queryOrFilters.bathrooms || 0;
+    amenities = queryOrFilters.amenities || [];
+    startDate = queryOrFilters.startDate || '';
+    endDate = queryOrFilters.endDate || '';
+  } else {
+    query = queryOrFilters || '';
+  }
+
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
 
   try {
@@ -40,28 +72,90 @@ export async function fetchFilteredProperties(query: string, currentPage: number
       LEFT JOIN users u ON p.host_id = u.id
       LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
       WHERE
-        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category || ''}%`}) AND
-        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`})
+        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+        (p.price_per_night >= ${minPrice}) AND
+        (p.price_per_night <= ${maxPrice}) AND
+        (p.max_guests >= ${guests}) AND
+        (p.bedrooms >= ${bedrooms}) AND
+        (p.bathrooms >= ${bathrooms}) AND
+        (${startDate === '' || endDate === ''} OR NOT EXISTS (
+          SELECT 1 FROM bookings b
+          WHERE b.property_id = p.id
+            AND b.status != 'cancelled'
+            AND b.start_date < ${endDate}
+            AND b.end_date > ${startDate}
+        ))
       ORDER BY p.created_at DESC
       LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
     `;
 
-    return data.rows;
+    let rows = data.rows;
+
+    // Filtrar por comodidades (amenities) si fueron seleccionadas
+    if (amenities.length > 0) {
+      rows = rows.filter((prop) => {
+        if (!prop.amenities) return false;
+        return amenities.every((a) => prop.amenities.includes(a));
+      });
+    }
+
+    return rows;
   } catch (error) {
     console.error('Database Error:', error);
     throw new Error('Failed to fetch properties.');
   }
 }
 
-export async function fetchPropertiesPages(query: string, category?: string) {
+export async function fetchPropertiesPages(
+  queryOrFilters: string | PropertyFilters,
+  categoryParam?: string
+) {
   noStore();
+
+  let query = '';
+  let category = categoryParam || '';
+  let minPrice = 0;
+  let maxPrice = 999999999;
+  let guests = 0;
+  let bedrooms = 0;
+  let bathrooms = 0;
+  let startDate = '';
+  let endDate = '';
+
+  if (typeof queryOrFilters === 'object' && queryOrFilters !== null) {
+    query = queryOrFilters.query || '';
+    category = queryOrFilters.category || category || '';
+    minPrice = queryOrFilters.minPrice || 0;
+    maxPrice = queryOrFilters.maxPrice || 999999999;
+    guests = queryOrFilters.guests || 0;
+    bedrooms = queryOrFilters.bedrooms || 0;
+    bathrooms = queryOrFilters.bathrooms || 0;
+    startDate = queryOrFilters.startDate || '';
+    endDate = queryOrFilters.endDate || '';
+  } else {
+    query = queryOrFilters || '';
+  }
+
   try {
     const count = await sql`
       SELECT COUNT(*)
       FROM properties p
       WHERE
-        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category || ''}%`}) AND
-        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`})
+        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+        (p.price_per_night >= ${minPrice}) AND
+        (p.price_per_night <= ${maxPrice}) AND
+        (p.max_guests >= ${guests}) AND
+        (p.bedrooms >= ${bedrooms}) AND
+        (p.bathrooms >= ${bathrooms}) AND
+        (${startDate === '' || endDate === ''} OR NOT EXISTS (
+          SELECT 1 FROM bookings b
+          WHERE b.property_id = p.id
+            AND b.status != 'cancelled'
+            AND b.start_date < ${endDate}
+            AND b.end_date > ${startDate}
+        ))
     `;
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
@@ -71,6 +165,7 @@ export async function fetchPropertiesPages(query: string, category?: string) {
     throw new Error('Failed to fetch total number of properties.');
   }
 }
+
 
 
 export async function fetchPropertyById(id: string) {

@@ -1,21 +1,22 @@
 import { Suspense } from 'react';
 import { CardInicio } from '@/app/ui/inicio/cards1';
-import { fetchFilteredProperties, fetchPropertiesPages } from '@/app/lib/data';
-import Search from '@/app/ui/search';
+import { fetchFilteredProperties } from '@/app/lib/data';
+import SearchFilters from '@/app/ui/search-filters';
+import { PropertyFilters } from '@/app/lib/definitions';
 import { SparklesIcon } from '@heroicons/react/24/outline';
 
-// Este es el componente que se encarga de buscar en la BD (Server Component)
 async function PageContent({
-  query,
+  filters,
   currentPage,
 }: {
-  query: string;
+  filters: PropertyFilters;
   currentPage: number;
 }) {
-  const properties = await fetchFilteredProperties(query, currentPage);
+  const properties = await fetchFilteredProperties(filters, currentPage);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* Banner de Bienvenida */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden shadow-md">
         <div className="absolute right-0 bottom-0 opacity-10 translate-y-12 translate-x-12 w-64 h-64 bg-emerald-400 rounded-full blur-3xl" />
         <div className="absolute left-1/3 top-0 opacity-10 -translate-y-12 w-48 h-48 bg-teal-400 rounded-full blur-2xl" />
@@ -34,13 +35,13 @@ async function PageContent({
         </div>
       </div>
 
-      <div className="bg-white/80 border border-slate-100 p-4 rounded-2xl shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
-        <div className="flex-1 w-full">
-          <Search placeholder="Buscar por ciudad, título o características..." />
-        </div>
-        <div className="text-xs text-slate-500 font-semibold shrink-0">
-          Resultados: <span className="text-slate-800 font-bold">{properties.length}</span> alojamientos
-        </div>
+      {/* Componente de Búsqueda y Filtros Avanzados */}
+      <SearchFilters />
+
+      {/* Resultados de la Búsqueda */}
+      <div className="flex items-center justify-between px-1 text-xs text-slate-500 font-semibold">
+        <span>Resultados de la búsqueda:</span>
+        <span><strong className="text-slate-800 font-bold">{properties.length}</strong> {properties.length === 1 ? 'alojamiento encontrado' : 'alojamientos encontrados'}</span>
       </div>
 
       {properties.length > 0 ? (
@@ -50,30 +51,50 @@ async function PageContent({
           ))}
         </div>
       ) : (
-        <div className="bg-white/80 border border-slate-100 rounded-2xl p-12 text-center max-w-md mx-auto space-y-3">
-          <p className="text-slate-400 text-sm">No encontramos alojamientos que coincidan con tu búsqueda.</p>
-          <p className="text-xs text-slate-400">Intenta buscando términos diferentes como la ciudad de destino.</p>
+        <div className="bg-white/80 border border-slate-100 rounded-3xl p-12 text-center max-w-md mx-auto space-y-3 shadow-sm">
+          <p className="text-slate-600 text-sm font-bold">No encontramos alojamientos que coincidan con tu búsqueda.</p>
+          <p className="text-xs text-slate-400">Intenta ajustando los filtros de precio, fechas o comodidades seleccionadas.</p>
         </div>
       )}
     </div>
   );
 }
 
-// Next.js pasa searchParams a los Server Components de tipo Page por defecto
 export default async function Page({
   searchParams,
 }: {
   searchParams?: {
     query?: string;
     page?: string;
+    minPrice?: string;
+    maxPrice?: string;
+    guests?: string;
+    bedrooms?: string;
+    bathrooms?: string;
+    amenities?: string;
+    startDate?: string;
+    endDate?: string;
   };
 }) {
-  const query = searchParams?.query || '';
   const currentPage = Number(searchParams?.page) || 1;
+
+  const filters: PropertyFilters = {
+    query: searchParams?.query || '',
+    minPrice: searchParams?.minPrice ? Number(searchParams.minPrice) : undefined,
+    maxPrice: searchParams?.maxPrice ? Number(searchParams.maxPrice) : undefined,
+    guests: searchParams?.guests ? Number(searchParams.guests) : undefined,
+    bedrooms: searchParams?.bedrooms ? Number(searchParams.bedrooms) : undefined,
+    bathrooms: searchParams?.bathrooms ? Number(searchParams.bathrooms) : undefined,
+    amenities: searchParams?.amenities ? searchParams.amenities.split(',') : undefined,
+    startDate: searchParams?.startDate || '',
+    endDate: searchParams?.endDate || '',
+  };
+
+  const keyString = JSON.stringify(searchParams || {});
 
   return (
     <Suspense 
-      key={query + currentPage} 
+      key={keyString} 
       fallback={
         <div className="space-y-6 animate-pulse">
           <div className="bg-slate-200 rounded-3xl h-48 sm:h-52 w-full" />
@@ -86,7 +107,7 @@ export default async function Page({
         </div>
       }
     >
-      <PageContent query={query} currentPage={currentPage} />
+      <PageContent filters={filters} currentPage={currentPage} />
     </Suspense>
   );
 }

@@ -99,5 +99,19 @@ export type CustomersTableType = {
 
 export type FormattedCustomersTable = CustomersTableType;
 
+export type PropertyFilters = {
+  query?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  guests?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
+  startDate?: string;
+  endDate?: string;
+};
+
+
 
 
