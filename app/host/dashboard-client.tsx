@@ -271,11 +271,10 @@ export default function DashboardClient({
     <div className={`space-y-8 animate-in fade-in duration-300 ${isPending ? 'opacity-70 pointer-events-none' : ''}`}>
       {/* Sección Hero / Título */}
       <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white relative overflow-hidden border border-slate-800 shadow-md">
-        <div className="absolute right-0 bottom-0 opacity-10 translate-y-12 translate-x-12 w-64 h-64 bg-emerald-400 rounded-full blur-3xl" />
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-emerald-400">
-              <SparklesIcon className="w-4 h-4" />
+              <SparklesIcon className="w-4 h-4 shrink-0" />
               <span>Gestión de Alojamientos</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
@@ -290,7 +289,7 @@ export default function DashboardClient({
               onClick={handleOpenCreate}
               className="px-5 py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs tracking-wide uppercase rounded-xl shadow-md transition-all flex items-center gap-2 cursor-pointer"
             >
-              <PlusIcon className="w-4 h-4 stroke-[3]" />
+              <PlusIcon className="w-4 h-4 stroke-[3] shrink-0" />
               Crear Alojamiento
             </button>
           </div>
@@ -299,49 +298,49 @@ export default function DashboardClient({
 
       {/* Grid de Estadísticas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-          <div className="bg-emerald-50 p-4 rounded-2xl text-emerald-600">
-            <BanknotesIcon className="w-6 h-6" />
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-emerald-50 rounded-2xl text-emerald-600 flex items-center justify-center shrink-0">
+            <BanknotesIcon className="w-6 h-6 shrink-0" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ingresos Confirmados</p>
-            <h3 className="text-xl font-extrabold text-slate-800 mt-0.5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Ingresos Confirmados</p>
+            <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 mt-0.5 truncate">
               {formatPrice(stats.totalEarnings)}
             </h3>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-          <div className="bg-sky-50 p-4 rounded-2xl text-sky-600">
-            <ChartPieIcon className="w-6 h-6" />
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-sky-50 rounded-2xl text-sky-600 flex items-center justify-center shrink-0">
+            <ChartPieIcon className="w-6 h-6 shrink-0" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Ocupación Est.</p>
-            <h3 className="text-xl font-extrabold text-slate-800 mt-0.5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Ocupación Est.</p>
+            <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 mt-0.5 truncate">
               {stats.occupancyRate}%
             </h3>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-          <div className="bg-amber-50 p-4 rounded-2xl text-amber-500">
-            <StarIcon className="w-6 h-6" />
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-50 rounded-2xl text-amber-500 flex items-center justify-center shrink-0">
+            <StarIcon className="w-6 h-6 shrink-0" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Calificación</p>
-            <h3 className="text-xl font-extrabold text-slate-800 mt-0.5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Calificación</p>
+            <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 mt-0.5 truncate">
               ⭐ {stats.averageRating.toFixed(2)}
             </h3>
           </div>
         </div>
 
-        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-5">
-          <div className="bg-purple-50 p-4 rounded-2xl text-purple-600">
-            <CalendarDaysIcon className="w-6 h-6" />
+        <div className="bg-white border border-slate-100 rounded-3xl p-6 shadow-sm flex items-center gap-4">
+          <div className="w-12 h-12 bg-purple-50 rounded-2xl text-purple-600 flex items-center justify-center shrink-0">
+            <CalendarDaysIcon className="w-6 h-6 shrink-0" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Reservas</p>
-            <h3 className="text-xl font-extrabold text-slate-800 mt-0.5">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider truncate">Total Reservas</p>
+            <h3 className="text-lg sm:text-xl font-extrabold text-slate-800 mt-0.5 truncate">
               {stats.totalBookings}
             </h3>
           </div>
