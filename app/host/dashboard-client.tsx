@@ -129,7 +129,7 @@ export default function DashboardClient({
     setFormBedrooms(property.bedrooms);
     setFormBathrooms(property.bathrooms);
     setFormImage(property.image_url || '');
-    
+
     const isDefault = property.image_url ? Object.values(DEFAULT_IMAGES).includes(property.image_url) : true;
     setUseDefaultImage(isDefault);
     setUploadedImages(property.image_url ? [property.image_url] : []);
@@ -150,7 +150,7 @@ export default function DashboardClient({
         const file = files[i];
         // Compresión WebP automática en el cliente
         const compressedFile = await compressAndConvertToWebP(file);
-        
+
         const uploadFormData = new FormData();
         uploadFormData.append('file', compressedFile);
 
@@ -204,7 +204,7 @@ export default function DashboardClient({
 
   const handleSaveProperty = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     const formData = new FormData();
     formData.append('title', formName);
     formData.append('description', formDescription);
@@ -262,7 +262,7 @@ export default function DashboardClient({
       minimumFractionDigits: 0,
     }).format(val);
   };
-  
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString('es-CO', { timeZone: 'UTC' });
   };
@@ -351,17 +351,15 @@ export default function DashboardClient({
       <div className="flex border-b border-slate-200 gap-6">
         <button
           onClick={() => setActiveTab('properties')}
-          className={`pb-3 text-sm font-extrabold transition-all border-b-2 tracking-wide uppercase ${
-            activeTab === 'properties' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-400'
-          }`}
+          className={`pb-3 text-sm font-extrabold transition-all border-b-2 tracking-wide uppercase ${activeTab === 'properties' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-400'
+            }`}
         >
           Mis Alojamientos ({properties.length})
         </button>
         <button
           onClick={() => setActiveTab('bookings')}
-          className={`pb-3 text-sm font-extrabold transition-all border-b-2 tracking-wide uppercase ${
-            activeTab === 'bookings' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-400'
-          }`}
+          className={`pb-3 text-sm font-extrabold transition-all border-b-2 tracking-wide uppercase ${activeTab === 'bookings' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-slate-400'
+            }`}
         >
           Reservas ({stats.bookingsList.length})
         </button>
@@ -384,9 +382,8 @@ export default function DashboardClient({
             <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
               <button
                 onClick={() => setSelectedCategoryFilter('todos')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${
-                  selectedCategoryFilter === 'todos' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500'
-                }`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${selectedCategoryFilter === 'todos' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500'
+                  }`}
               >
                 Todos
               </button>
@@ -394,9 +391,8 @@ export default function DashboardClient({
                 <button
                   key={cat}
                   onClick={() => setSelectedCategoryFilter(cat)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${
-                    selectedCategoryFilter === cat ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${selectedCategoryFilter === cat ? 'bg-emerald-50 text-emerald-700' : 'text-slate-500'
+                    }`}
                 >
                   {cat}
                 </button>
@@ -480,11 +476,10 @@ export default function DashboardClient({
                     <td className="p-4">{formatDate(b.start_date)} - {formatDate(b.end_date)}</td>
                     <td className="p-4 font-bold">{formatPrice(b.total_price)}</td>
                     <td className="p-4">
-                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase border ${
-                        b.status === 'confirmed' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
+                      <span className={`px-2.5 py-1 rounded-full text-[9px] font-bold uppercase border ${b.status === 'confirmed' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' :
                         b.status === 'pending' ? 'bg-sky-50 border-sky-100 text-sky-700' :
-                        'bg-amber-50 border-amber-100 text-amber-700'
-                      }`}>
+                          'bg-amber-50 border-amber-100 text-amber-700'
+                        }`}>
                         {b.status}
                       </span>
                     </td>
@@ -508,7 +503,7 @@ export default function DashboardClient({
               <div className="space-y-4">
                 <label className="block text-xs font-bold text-slate-600">Nombre *</label>
                 <input required value={formName} onChange={e => setFormName(e.target.value)} className="w-full px-3 py-2 border rounded-xl text-xs" />
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-600">Categoría *</label>
@@ -544,7 +539,7 @@ export default function DashboardClient({
               {/* Sección de Imágenes (Subida Real + Opciones) */}
               <div className="space-y-3">
                 <label className="block text-xs font-bold text-slate-700">Imágenes del Alojamiento</label>
-                
+
                 {/* Zona de Subida Directa */}
                 <div className="border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-2xl p-4 bg-slate-50/50 text-center transition-colors">
                   <input
@@ -587,7 +582,7 @@ export default function DashboardClient({
                       {uploadedImages.map((url, idx) => (
                         <div key={idx} className="relative aspect-video bg-slate-100 rounded-xl overflow-hidden group border border-slate-200">
                           <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
-                          
+
                           {idx === 0 ? (
                             <span className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md shadow-sm">
                               Portada
@@ -619,10 +614,10 @@ export default function DashboardClient({
                 <div className="pt-2 border-t border-slate-100">
                   <div className="flex gap-4 mb-2">
                     <label className="text-xs flex items-center gap-1.5 font-medium text-slate-600 cursor-pointer">
-                      <input type="radio" checked={useDefaultImage} onChange={() => setUseDefaultImage(true)}/> Usar imagen predeterminada
+                      <input type="radio" checked={useDefaultImage} onChange={() => setUseDefaultImage(true)} /> Usar imagen predeterminada
                     </label>
                     <label className="text-xs flex items-center gap-1.5 font-medium text-slate-600 cursor-pointer">
-                      <input type="radio" checked={!useDefaultImage && uploadedImages.length === 0} onChange={() => setUseDefaultImage(false)}/> URL Externa
+                      <input type="radio" checked={!useDefaultImage && uploadedImages.length === 0} onChange={() => setUseDefaultImage(false)} /> URL Externa
                     </label>
                   </div>
                   {!useDefaultImage && uploadedImages.length === 0 && (

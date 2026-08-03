@@ -10,6 +10,8 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/solid';
 
+import PropertyMap from '@/app/ui/map/property-map';
+
 export default async function PropertyPage({ params }: { params: { id: string } }) {
   const [property, reviews] = await Promise.all([
     fetchPropertyById(params.id),
@@ -128,7 +130,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
           </div>
 
           {/* Comodidades */}
-          <div className="space-y-4 pb-6">
+          <div className="space-y-4 pb-6 border-b border-slate-100">
             <h3 className="text-lg font-bold text-slate-800">Lo que ofrece este lugar</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {property.amenities.map(amenity => (
@@ -139,6 +141,13 @@ export default async function PropertyPage({ params }: { params: { id: string } 
               ))}
             </div>
           </div>
+
+          {/* Mapa Interactivo de Ubicación */}
+          <PropertyMap
+            title={property.title}
+            city={property.city}
+            propertyId={property.id}
+          />
           
         </div>
 
