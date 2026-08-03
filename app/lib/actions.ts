@@ -2,6 +2,8 @@
 
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
+import bcrypt from 'bcrypt';
+import { signIn } from '@/auth';
 
 const DEFAULT_IMAGES: Record<string, string> = {
   'Cabañas': 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
@@ -262,11 +264,49 @@ export async function createReview(formData: FormData) {
   }
 }
 
+export async function registerUser(formData: FormData) {
+  const name = formData.get('name') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
+  const role = (formData.get('role') as string) || 'guest';
+
+  if (!name || !email || !password) {
+    return { error: 'Por favor completa todos los campos obligatorios.' };
+  }
+
+  try {
+    const existingUser = await sql`SELECT id FROM users WHERE email = ${email}`;
+    if (existingUser.rows.length > 0) {
+      return { error: 'Este correo electrónico ya está registrado.' };
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await sql`
+      INSERT INTO users (name, email, password, role)
+      VALUES (${name}, ${email}, ${hashedPassword}, ${role})
+    `;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error al registrar usuario:', error);
+    return { error: 'Ocurrió un error al crear la cuenta. Inténtalo de nuevo.' };
+  }
+}
+
 export async function authenticate(
   prevState: string | undefined,
   formData: FormData,
 ) {
-  return undefined;
+  try {
+    await signIn('credentials', formData);
+  } catch (error: any) {
+    if (error?.type === 'CredentialsSignin' || error?.message?.includes('CredentialsSignin')) {
+      return 'Credenciales inválidas. Verifica tu correo y contraseña.';
+    }
+    throw error;
+  }
 }
+
 
 

@@ -38,8 +38,21 @@ export default function Header() {
             <span>Explorando alojamientos en Santa Marta, CO</span>
           </div>
 
-          {/* Menú de Acceso / Dashboard / Mis Reservas */}
+          {/* Menú de Acceso / Dashboard / Mis Reservas / Login */}
           <div className="flex items-center gap-2 sm:gap-3">
+            <Link
+              href="/login"
+              className={clsx(
+                "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
+                {
+                  "bg-slate-900 border-slate-900 text-white font-bold": pathname === '/login'
+                }
+              )}
+            >
+              <UserCircleIcon className="w-4 h-4 text-emerald-600" />
+              <span>Ingresar</span>
+            </Link>
+
             <Link
               href="/mis-reservas"
               className={clsx(
@@ -49,7 +62,6 @@ export default function Header() {
                 }
               )}
             >
-              <UserCircleIcon className="w-4 h-4 text-emerald-600" />
               <span>Mis Reservas</span>
             </Link>
 
