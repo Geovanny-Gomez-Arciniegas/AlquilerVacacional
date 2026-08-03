@@ -51,44 +51,78 @@ export async function fetchFilteredProperties(
   }
 
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const hasDateFilter = Boolean(startDate && endDate);
 
   try {
-    const data = await sql<PropertyWithPrimaryImage>`
-      SELECT 
-        p.id, 
-        p.title, 
-        p.city, 
-        p.country, 
-        p.category,
-        p.price_per_night, 
-        p.max_guests,
-        p.bedrooms,
-        p.bathrooms,
-        p.amenities,
-        p.rating,
-        u.name AS host_name,
-        i.url AS image_url
-      FROM properties p
-      LEFT JOIN users u ON p.host_id = u.id
-      LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
-      WHERE
-        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
-        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
-        (p.price_per_night >= ${minPrice}) AND
-        (p.price_per_night <= ${maxPrice}) AND
-        (p.max_guests >= ${guests}) AND
-        (p.bedrooms >= ${bedrooms}) AND
-        (p.bathrooms >= ${bathrooms}) AND
-        (${startDate === '' || endDate === ''} OR NOT EXISTS (
-          SELECT 1 FROM bookings b
-          WHERE b.property_id = p.id
-            AND b.status != 'cancelled'
-            AND b.start_date < ${endDate}
-            AND b.end_date > ${startDate}
-        ))
-      ORDER BY p.created_at DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    let data;
+    if (hasDateFilter) {
+      data = await sql<PropertyWithPrimaryImage>`
+        SELECT 
+          p.id, 
+          p.title, 
+          p.city, 
+          p.country, 
+          p.category,
+          p.price_per_night, 
+          p.max_guests,
+          p.bedrooms,
+          p.bathrooms,
+          p.amenities,
+          p.rating,
+          u.name AS host_name,
+          i.url AS image_url
+        FROM properties p
+        LEFT JOIN users u ON p.host_id = u.id
+        LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms}) AND
+          NOT EXISTS (
+            SELECT 1 FROM bookings b
+            WHERE b.property_id = p.id
+              AND b.status != 'cancelled'
+              AND b.start_date < ${endDate}::date
+              AND b.end_date > ${startDate}::date
+          )
+        ORDER BY p.created_at DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    } else {
+      data = await sql<PropertyWithPrimaryImage>`
+        SELECT 
+          p.id, 
+          p.title, 
+          p.city, 
+          p.country, 
+          p.category,
+          p.price_per_night, 
+          p.max_guests,
+          p.bedrooms,
+          p.bathrooms,
+          p.amenities,
+          p.rating,
+          u.name AS host_name,
+          i.url AS image_url
+        FROM properties p
+        LEFT JOIN users u ON p.host_id = u.id
+        LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms})
+        ORDER BY p.created_at DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    }
 
     let rows = data.rows;
 
@@ -137,26 +171,44 @@ export async function fetchPropertiesPages(
     query = queryOrFilters || '';
   }
 
+  const hasDateFilter = Boolean(startDate && endDate);
+
   try {
-    const count = await sql`
-      SELECT COUNT(*)
-      FROM properties p
-      WHERE
-        (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
-        (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
-        (p.price_per_night >= ${minPrice}) AND
-        (p.price_per_night <= ${maxPrice}) AND
-        (p.max_guests >= ${guests}) AND
-        (p.bedrooms >= ${bedrooms}) AND
-        (p.bathrooms >= ${bathrooms}) AND
-        (${startDate === '' || endDate === ''} OR NOT EXISTS (
-          SELECT 1 FROM bookings b
-          WHERE b.property_id = p.id
-            AND b.status != 'cancelled'
-            AND b.start_date < ${endDate}
-            AND b.end_date > ${startDate}
-        ))
-    `;
+    let count;
+    if (hasDateFilter) {
+      count = await sql`
+        SELECT COUNT(*)
+        FROM properties p
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms}) AND
+          NOT EXISTS (
+            SELECT 1 FROM bookings b
+            WHERE b.property_id = p.id
+              AND b.status != 'cancelled'
+              AND b.start_date < ${endDate}::date
+              AND b.end_date > ${startDate}::date
+          )
+      `;
+    } else {
+      count = await sql`
+        SELECT COUNT(*)
+        FROM properties p
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms})
+      `;
+    }
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
     return totalPages;
