@@ -13,6 +13,8 @@ import {
   SparklesIcon,
 } from '@heroicons/react/24/outline';
 import { createProperty, updateProperty, deleteProperty, simulateBooking } from '@/app/lib/actions';
+import { compressAndConvertToWebP } from '@/app/lib/image-optimizer';
+import { PhotoIcon, ArrowUpTrayIcon, XMarkIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
 const CATEGORIES = ['Cabañas', 'Casas', 'Apartamentos', 'Fincas', 'Habitaciones'] as const;
 
@@ -95,6 +97,10 @@ export default function DashboardClient({
     'Zona de Fogatas', 'Senderismo', 'Desayuno Incluido', 'Pet Friendly',
   ];
 
+  const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+
   const handleOpenCreate = () => {
     setEditingProperty(null);
     setFormName('');
@@ -106,6 +112,7 @@ export default function DashboardClient({
     setFormBedrooms(2);
     setFormBathrooms(1);
     setFormImage('');
+    setUploadedImages([]);
     setUseDefaultImage(true);
     setFormAmenities(['WiFi', 'Aire Acondicionado']);
     setIsModalOpen(true);
@@ -125,8 +132,66 @@ export default function DashboardClient({
     
     const isDefault = property.image_url ? Object.values(DEFAULT_IMAGES).includes(property.image_url) : true;
     setUseDefaultImage(isDefault);
+    setUploadedImages(property.image_url ? [property.image_url] : []);
     setFormAmenities(property.amenities || []);
     setIsModalOpen(true);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadError('');
+    setIsUploading(true);
+    const newUrls: string[] = [];
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        // Compresión WebP automática en el cliente
+        const compressedFile = await compressAndConvertToWebP(file);
+        
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', compressedFile);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: uploadFormData,
+        });
+
+        if (!res.ok) {
+          throw new Error('Falló la subida de una imagen');
+        }
+
+        const data = await res.json();
+        if (data.url) {
+          newUrls.push(data.url);
+        }
+      }
+
+      setUploadedImages(prev => [...prev, ...newUrls]);
+      setUseDefaultImage(false);
+    } catch (err) {
+      console.error(err);
+      setUploadError('Ocurrió un error al procesar o subir las imágenes.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    const updated = uploadedImages.filter((_, i) => i !== index);
+    setUploadedImages(updated);
+    if (updated.length === 0) {
+      setUseDefaultImage(true);
+    }
+  };
+
+  const handleSetPrimaryImage = (index: number) => {
+    if (index === 0) return;
+    const item = uploadedImages[index];
+    const rest = uploadedImages.filter((_, i) => i !== index);
+    setUploadedImages([item, ...rest]);
   };
 
   const handleDelete = (id: string) => {
@@ -153,6 +218,9 @@ export default function DashboardClient({
     if (!useDefaultImage && formImage) {
       formData.append('image', formImage);
     }
+
+    // Agregar imágenes subidas
+    uploadedImages.forEach(url => formData.append('imageUrls', url));
     formAmenities.forEach(a => formData.append('amenities', a));
 
     startTransition(async () => {
@@ -474,15 +542,94 @@ export default function DashboardClient({
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 mb-2">Imagen de Portada</label>
-                <div className="flex gap-4 mb-3">
-                  <label className="text-xs flex items-center gap-2"><input type="radio" checked={useDefaultImage} onChange={() => setUseDefaultImage(true)}/> Predeterminada</label>
-                  <label className="text-xs flex items-center gap-2"><input type="radio" checked={!useDefaultImage} onChange={() => setUseDefaultImage(false)}/> URL Personalizada</label>
+              {/* Sección de Imágenes (Subida Real + Opciones) */}
+              <div className="space-y-3">
+                <label className="block text-xs font-bold text-slate-700">Imágenes del Alojamiento</label>
+                
+                {/* Zona de Subida Directa */}
+                <div className="border-2 border-dashed border-slate-200 hover:border-emerald-500/50 rounded-2xl p-4 bg-slate-50/50 text-center transition-colors">
+                  <input
+                    type="file"
+                    id="file-upload"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer flex flex-col items-center justify-center space-y-2">
+                    <div className="w-10 h-10 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center">
+                      <ArrowUpTrayIcon className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 hover:underline">Haz clic para subir fotos reales</span>
+                      <span className="text-[10px] text-slate-400 block mt-0.5">Se optimizan y convierten a WebP automáticamente</span>
+                    </div>
+                  </label>
                 </div>
-                {!useDefaultImage && (
-                  <input required value={formImage} onChange={e => setFormImage(e.target.value)} placeholder="https://..." className="w-full px-3 py-2 border rounded-xl text-xs" />
+
+                {isUploading && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl flex items-center gap-2 text-xs font-semibold text-emerald-800">
+                    <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+                    <span>Optimizando y subiendo imágenes...</span>
+                  </div>
                 )}
+
+                {uploadError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-semibold text-rose-700">
+                    {uploadError}
+                  </div>
+                )}
+
+                {/* Vista previa de imágenes subidas */}
+                {uploadedImages.length > 0 && (
+                  <div className="space-y-2 pt-2">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">Fotos subidas ({uploadedImages.length}):</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {uploadedImages.map((url, idx) => (
+                        <div key={idx} className="relative aspect-video bg-slate-100 rounded-xl overflow-hidden group border border-slate-200">
+                          <img src={url} alt={`Foto ${idx + 1}`} className="w-full h-full object-cover" />
+                          
+                          {idx === 0 ? (
+                            <span className="absolute top-1.5 left-1.5 bg-emerald-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-md shadow-sm">
+                              Portada
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSetPrimaryImage(idx)}
+                              className="absolute top-1.5 left-1.5 bg-black/60 hover:bg-emerald-600 text-white text-[9px] font-bold px-2 py-0.5 rounded-md backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              Hacer Portada
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-rose-600 text-white p-1 rounded-full backdrop-blur-sm transition-colors"
+                          >
+                            <XMarkIcon className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Opciones Secundarias (Predeterminada o URL) */}
+                <div className="pt-2 border-t border-slate-100">
+                  <div className="flex gap-4 mb-2">
+                    <label className="text-xs flex items-center gap-1.5 font-medium text-slate-600 cursor-pointer">
+                      <input type="radio" checked={useDefaultImage} onChange={() => setUseDefaultImage(true)}/> Usar imagen predeterminada
+                    </label>
+                    <label className="text-xs flex items-center gap-1.5 font-medium text-slate-600 cursor-pointer">
+                      <input type="radio" checked={!useDefaultImage && uploadedImages.length === 0} onChange={() => setUseDefaultImage(false)}/> URL Externa
+                    </label>
+                  </div>
+                  {!useDefaultImage && uploadedImages.length === 0 && (
+                    <input value={formImage} onChange={e => setFormImage(e.target.value)} placeholder="https://..." className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs" />
+                  )}
+                </div>
               </div>
 
               <div>

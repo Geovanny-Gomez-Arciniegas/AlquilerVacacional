@@ -25,10 +25,16 @@ export async function createProperty(formData: FormData, hostId: string) {
   const amenities = formData.getAll('amenities') as string[];
   const useDefaultImage = formData.get('useDefaultImage') === 'true';
   const customImageUrl = formData.get('image') as string;
+  const uploadedUrls = formData.getAll('imageUrls') as string[];
   
-  const finalImage = useDefaultImage 
-    ? (DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas'])
-    : (customImageUrl || DEFAULT_IMAGES[category]);
+  let allImageUrls: string[] = [];
+  if (uploadedUrls.length > 0) {
+    allImageUrls = uploadedUrls;
+  } else if (!useDefaultImage && customImageUrl) {
+    allImageUrls = [customImageUrl];
+  } else {
+    allImageUrls = [DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas']];
+  }
 
   const city = location;
   const country = 'Colombia'; // Default para simplificar
@@ -42,11 +48,14 @@ export async function createProperty(formData: FormData, hostId: string) {
     
     const propertyId = insertedProperty.rows[0].id;
     
-    // Insert primary image
-    await sql`
-      INSERT INTO images (property_id, url, is_primary)
-      VALUES (${propertyId}, ${finalImage}, true)
-    `;
+    // Insertar imágenes (la primera marcada como is_primary = true)
+    for (let i = 0; i < allImageUrls.length; i++) {
+      const isPrimary = i === 0;
+      await sql`
+        INSERT INTO images (property_id, url, is_primary)
+        VALUES (${propertyId}, ${allImageUrls[i]}, ${isPrimary})
+      `;
+    }
 
     revalidatePath('/host');
     revalidatePath('/');
@@ -66,7 +75,19 @@ export async function updateProperty(id: string, formData: FormData) {
   const bedrooms = Number(formData.get('bedrooms'));
   const bathrooms = Number(formData.get('bathrooms'));
   const amenities = formData.getAll('amenities') as string[];
+  const useDefaultImage = formData.get('useDefaultImage') === 'true';
+  const customImageUrl = formData.get('image') as string;
+  const uploadedUrls = formData.getAll('imageUrls') as string[];
   
+  let allImageUrls: string[] = [];
+  if (uploadedUrls.length > 0) {
+    allImageUrls = uploadedUrls;
+  } else if (!useDefaultImage && customImageUrl) {
+    allImageUrls = [customImageUrl];
+  } else if (useDefaultImage) {
+    allImageUrls = [DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas']];
+  }
+
   const city = location;
   const country = 'Colombia'; // Default para simplificar
 
@@ -87,27 +108,13 @@ export async function updateProperty(id: string, formData: FormData) {
       WHERE id = ${id}
     `;
 
-    // Optionally update image if provided
-    const useDefaultImage = formData.get('useDefaultImage') === 'true';
-    const customImageUrl = formData.get('image') as string;
-    
-    if (useDefaultImage || customImageUrl) {
-      const finalImage = useDefaultImage 
-        ? (DEFAULT_IMAGES[category] || DEFAULT_IMAGES['Cabañas'])
-        : customImageUrl;
-      
-      // Attempt to update the primary image
-      const updateImg = await sql`
-        UPDATE images
-        SET url = ${finalImage}
-        WHERE property_id = ${id} AND is_primary = true
-      `;
-      
-      // If no primary image existed, create it
-      if (updateImg.rowCount === 0) {
+    if (allImageUrls.length > 0) {
+      await sql`DELETE FROM images WHERE property_id = ${id}`;
+      for (let i = 0; i < allImageUrls.length; i++) {
+        const isPrimary = i === 0;
         await sql`
           INSERT INTO images (property_id, url, is_primary)
-          VALUES (${id}, ${finalImage}, true)
+          VALUES (${id}, ${allImageUrls[i]}, ${isPrimary})
         `;
       }
     }
@@ -120,6 +127,7 @@ export async function updateProperty(id: string, formData: FormData) {
     throw new Error('Failed to update property.');
   }
 }
+
 
 export async function deleteProperty(id: string) {
   try {
