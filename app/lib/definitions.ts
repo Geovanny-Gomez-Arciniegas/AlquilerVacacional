@@ -1,29 +1,85 @@
-// This file contains type definitions for your data.
-// It describes the shape of the data, and what data type each property should accept.
-// For simplicity of teaching, we're manually defining these types.
-// However, these types are generated automatically if you're using an ORM such as Prisma.
+// Definiciones de tipos TypeScript para EcoBooking (Alquiler Vacacional)
+
+export type Role = 'admin' | 'host' | 'guest';
+export type BookingStatus = 'pending' | 'confirmed' | 'cancelled';
+
 export type User = {
   id: string;
   name: string;
   email: string;
-  password: string;
+  password?: string; // Optional for security when fetching public data
+  role: Role;
+  created_at: string;
 };
 
-export type Customer = {
+export type Property = {
   id: string;
-  name: string;
-  email: string;
-  image_url: string;
+  host_id: string;
+  title: string;
+  description: string;
+  city: string;
+  country: string;
+  category: string;
+  price_per_night: number;
+  max_guests: number;
+  bedrooms: number;
+  bathrooms: number;
+  amenities: string[];
+  rating: number;
+  created_at: string;
 };
 
-export type Invoice = {
-  id: string; 
-  customer_id: string;
-  amount: number;
-  date: string;
-  // In TypeScript, this is called a string union type.
-  // It means that the "status" property can only be one of the two strings: 'pending' or 'paid'.
-  status: 'pending' | 'paid';
+export type Image = {
+  id: string;
+  property_id: string;
+  url: string;
+  is_primary: boolean;
+  created_at: string;
+};
+
+export type Booking = {
+  id: string;
+  property_id: string;
+  guest_id: string;
+  start_date: string;
+  end_date: string;
+  total_price: number;
+  status: BookingStatus;
+  created_at: string;
+};
+
+export type Review = {
+  id: string;
+  property_id: string;
+  guest_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+};
+
+// Tipos formateados para la UI (Consultas JOIN)
+
+export type PropertyWithPrimaryImage = Property & {
+  image_url?: string;
+  host_name?: string;
+};
+
+export type PropertyDetail = Property & {
+  host_name: string;
+  host_email: string;
+  images: Image[];
+};
+
+export type FormattedBooking = Booking & {
+  property_title: string;
+  property_city: string;
+  guest_name: string;
+  guest_email: string;
+  property_image?: string;
+};
+
+export type ReviewWithGuest = Review & {
+  guest_name: string;
 };
 
 export type Revenue = {
@@ -31,49 +87,7 @@ export type Revenue = {
   revenue: number;
 };
 
-export type Apartamento = {
-  id: number;
-  nombre: string;
-  precioNoche: number;
-  descripcion: string;
-  capacidad: number;
-};
-
-export type LatestInvoice = {
-  id: string;
-  name: string;
-  image_url: string;
-  email: string;
-  amount: string;
-};
-
-// The database returns a number for amount, but we later format it to a string with the formatCurrency function
-export type LatestInvoiceRaw = Omit<LatestInvoice, 'amount'> & {
-  amount: number;
-};
-
-export type InvoicesTable = {
-  id: string;
-  customer_id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  date: string;
-  amount: number;
-  status: 'pending' | 'paid';
-};
-
 export type CustomersTableType = {
-  id: string;
-  name: string;
-  email: string;
-  image_url: string;
-  total_invoices: number;
-  total_pending: number;
-  total_paid: number;
-};
-
-export type FormattedCustomersTable = {
   id: string;
   name: string;
   email: string;
@@ -83,14 +97,21 @@ export type FormattedCustomersTable = {
   total_paid: string;
 };
 
-export type CustomerField = {
-  id: string;
-  name: string;
+export type FormattedCustomersTable = CustomersTableType;
+
+export type PropertyFilters = {
+  query?: string;
+  category?: string;
+  minPrice?: number;
+  maxPrice?: number;
+  guests?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
+  startDate?: string;
+  endDate?: string;
 };
 
-export type InvoiceForm = {
-  id: string;
-  customer_id: string;
-  amount: number;
-  status: 'pending' | 'paid';
-};
+
+
+

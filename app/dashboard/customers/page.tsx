@@ -1,3 +1,5 @@
+import { redirect } from 'next/navigation';
+
 export default function Page() {
-    return <p>Customers Page</p>;
+  redirect('/mis-reservas');
 }

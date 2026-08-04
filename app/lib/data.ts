@@ -1,249 +1,460 @@
 import { sql } from '@vercel/postgres';
 import {
-  CustomerField,
-  CustomersTableType,
-  InvoiceForm,
-  InvoicesTable,
-  LatestInvoiceRaw,
   User,
-  Revenue,
+  Property,
+  PropertyWithPrimaryImage,
+  PropertyDetail,
+  Image,
+  FormattedBooking,
+  ReviewWithGuest,
+  PropertyFilters,
 } from './definitions';
-import { formatCurrency } from './utils';
 import { unstable_noStore as noStore } from 'next/cache';
 
-export async function fetchRevenue() {
-  // Add noStore() here prevent the response from being cached.
-  noStore();
-  // This is equivalent to in fetch(..., {cache: 'no-store'}).
-  // Fetch the last 5 invoices, sorted by date
-  // Recupera las últimas 5 facturas, ordenadas por fecha
-  const data = await sql<LatestInvoiceRaw>`
-    SELECT invoices.amount, customers.name, customers.image_url, customers.email
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    ORDER BY invoices.date DESC
-    LIMIT 5`;
-
-  try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    console.log('Fetching revenue data...');
-    await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
-
-    console.log('Data fetch completed after 3 seconds.');
-
-    return data.rows;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch revenue data.');
-  }
-}
-
-export async function fetchLatestInvoices() {
-  noStore();
-  // Fetch the last 5 invoices, sorted by date
-  try {
-    const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
-
-    const latestInvoices = data.rows.map((invoice) => ({
-      ...invoice,
-      amount: formatCurrency(invoice.amount),
-    }));
-    return latestInvoices;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch the latest invoices.');
-  }
-}
-
-export async function fetchCardData() {
-  noStore();
-  try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
-
-    const data = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
-    ]);
-
-    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
-
-    return {
-      numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
-    };
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch card data.');
-  }
-}
-
 const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
+
+// ==========================================
+// PROPERTIES
+// ==========================================
+
+export async function fetchFilteredProperties(
+  queryOrFilters: string | PropertyFilters,
+  currentPage: number = 1,
+  categoryParam?: string
 ) {
   noStore();
+  
+  let query = '';
+  let category = categoryParam || '';
+  let minPrice = 0;
+  let maxPrice = 999999999;
+  let guests = 0;
+  let bedrooms = 0;
+  let bathrooms = 0;
+  let amenities: string[] = [];
+  let startDate = '';
+  let endDate = '';
+
+  if (typeof queryOrFilters === 'object' && queryOrFilters !== null) {
+    query = queryOrFilters.query || '';
+    category = queryOrFilters.category || category || '';
+    minPrice = queryOrFilters.minPrice || 0;
+    maxPrice = queryOrFilters.maxPrice || 999999999;
+    guests = queryOrFilters.guests || 0;
+    bedrooms = queryOrFilters.bedrooms || 0;
+    bathrooms = queryOrFilters.bathrooms || 0;
+    amenities = queryOrFilters.amenities || [];
+    startDate = queryOrFilters.startDate || '';
+    endDate = queryOrFilters.endDate || '';
+  } else {
+    query = queryOrFilters || '';
+  }
+
   const offset = (currentPage - 1) * ITEMS_PER_PAGE;
+  const hasDateFilter = Boolean(startDate && endDate);
 
   try {
-    const invoices = await sql<InvoicesTable>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
-    `;
+    let data;
+    if (hasDateFilter) {
+      data = await sql<PropertyWithPrimaryImage>`
+        SELECT 
+          p.id, 
+          p.title, 
+          p.city, 
+          p.country, 
+          p.category,
+          p.price_per_night, 
+          p.max_guests,
+          p.bedrooms,
+          p.bathrooms,
+          p.amenities,
+          p.rating,
+          u.name AS host_name,
+          i.url AS image_url
+        FROM properties p
+        LEFT JOIN users u ON p.host_id = u.id
+        LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms}) AND
+          NOT EXISTS (
+            SELECT 1 FROM bookings b
+            WHERE b.property_id = p.id
+              AND b.status != 'cancelled'
+              AND b.start_date < ${endDate}::date
+              AND b.end_date > ${startDate}::date
+          )
+        ORDER BY p.created_at DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    } else {
+      data = await sql<PropertyWithPrimaryImage>`
+        SELECT 
+          p.id, 
+          p.title, 
+          p.city, 
+          p.country, 
+          p.category,
+          p.price_per_night, 
+          p.max_guests,
+          p.bedrooms,
+          p.bathrooms,
+          p.amenities,
+          p.rating,
+          u.name AS host_name,
+          i.url AS image_url
+        FROM properties p
+        LEFT JOIN users u ON p.host_id = u.id
+        LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms})
+        ORDER BY p.created_at DESC
+        LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+      `;
+    }
 
-    return invoices.rows;
+    let rows = data.rows;
+
+    // Filtrar por comodidades (amenities) si fueron seleccionadas
+    if (amenities.length > 0) {
+      rows = rows.filter((prop) => {
+        if (!prop.amenities) return false;
+        return amenities.every((a) => prop.amenities.includes(a));
+      });
+    }
+
+    return rows;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoices.');
+    throw new Error('Failed to fetch properties.');
   }
 }
 
-export async function fetchInvoicesPages(query: string) {
+export async function fetchPropertiesPages(
+  queryOrFilters: string | PropertyFilters,
+  categoryParam?: string
+) {
   noStore();
+
+  let query = '';
+  let category = categoryParam || '';
+  let minPrice = 0;
+  let maxPrice = 999999999;
+  let guests = 0;
+  let bedrooms = 0;
+  let bathrooms = 0;
+  let startDate = '';
+  let endDate = '';
+
+  if (typeof queryOrFilters === 'object' && queryOrFilters !== null) {
+    query = queryOrFilters.query || '';
+    category = queryOrFilters.category || category || '';
+    minPrice = queryOrFilters.minPrice || 0;
+    maxPrice = queryOrFilters.maxPrice || 999999999;
+    guests = queryOrFilters.guests || 0;
+    bedrooms = queryOrFilters.bedrooms || 0;
+    bathrooms = queryOrFilters.bathrooms || 0;
+    startDate = queryOrFilters.startDate || '';
+    endDate = queryOrFilters.endDate || '';
+  } else {
+    query = queryOrFilters || '';
+  }
+
+  const hasDateFilter = Boolean(startDate && endDate);
+
   try {
-    const count = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
+    let count;
+    if (hasDateFilter) {
+      count = await sql`
+        SELECT COUNT(*)
+        FROM properties p
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms}) AND
+          NOT EXISTS (
+            SELECT 1 FROM bookings b
+            WHERE b.property_id = p.id
+              AND b.status != 'cancelled'
+              AND b.start_date < ${endDate}::date
+              AND b.end_date > ${startDate}::date
+          )
+      `;
+    } else {
+      count = await sql`
+        SELECT COUNT(*)
+        FROM properties p
+        WHERE
+          (${category ? category : ''} = '' OR p.category ILIKE ${`%${category}%`}) AND
+          (p.title ILIKE ${`%${query}%`} OR p.city ILIKE ${`%${query}%`} OR p.country ILIKE ${`%${query}%`}) AND
+          (p.price_per_night >= ${minPrice}) AND
+          (p.price_per_night <= ${maxPrice}) AND
+          (p.max_guests >= ${guests}) AND
+          (p.bedrooms >= ${bedrooms}) AND
+          (p.bathrooms >= ${bathrooms})
+      `;
+    }
 
     const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
     return totalPages;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of invoices.');
+    throw new Error('Failed to fetch total number of properties.');
   }
 }
 
-export async function fetchInvoiceById(id: string) {
+
+
+export async function fetchPropertyById(id: string) {
   noStore();
   try {
-    const data = await sql<InvoiceForm>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
+    const propertyData = await sql`
+      SELECT 
+        p.*,
+        u.name AS host_name,
+        u.email AS host_email
+      FROM properties p
+      LEFT JOIN users u ON p.host_id = u.id
+      WHERE p.id = ${id}
     `;
 
-    const invoice = data.rows.map((invoice) => ({
-      ...invoice,
-      // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
-    }));
-    console.log(invoice[0]);
-    return invoice[0];
+    if (propertyData.rows.length === 0) {
+      return null;
+    }
+
+    const imagesData = await sql`
+      SELECT *
+      FROM images
+      WHERE property_id = ${id}
+      ORDER BY is_primary DESC, created_at ASC
+    `;
+
+    const property = propertyData.rows[0];
+    
+    return {
+      ...property,
+      images: imagesData.rows
+    } as PropertyDetail;
   } catch (error) {
     console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoice.');
+    throw new Error('Failed to fetch property details.');
   }
 }
 
-export async function fetchCustomers() {
+// ==========================================
+// HOST DASHBOARD
+// ==========================================
+
+export async function fetchHostProperties(hostId: string) {
   noStore();
   try {
-    const data = await sql<CustomerField>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
+    const data = await sql<PropertyWithPrimaryImage>`
+      SELECT 
+        p.id, 
+        p.title, 
+        p.city, 
+        p.country, 
+        p.category,
+        p.price_per_night, 
+        p.max_guests,
+        p.bedrooms,
+        p.bathrooms,
+        p.amenities,
+        p.rating,
+        p.description,
+        i.url AS image_url
+      FROM properties p
+      LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+      WHERE p.host_id = ${hostId}
+      ORDER BY p.created_at DESC
+    `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch host properties.');
+  }
+}
+
+export async function fetchHostStats(hostId: string) {
+  noStore();
+  try {
+    // 1. Ganancias totales (reservas confirmadas o pendientes, omitimos cancelled)
+    const earningsData = await sql`
+      SELECT SUM(b.total_price) as total
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.id
+      WHERE p.host_id = ${hostId} AND b.status != 'cancelled'
+    `;
+    const totalEarnings = Number(earningsData.rows[0].total) || 0;
+
+    // 2. Promedio de calificación y número de propiedades
+    const ratingData = await sql`
+      SELECT AVG(rating) as avg_rating, COUNT(id) as total_props
+      FROM properties
+      WHERE host_id = ${hostId}
+    `;
+    const averageRating = Number(ratingData.rows[0].avg_rating) || 0;
+    const totalProps = Number(ratingData.rows[0].total_props) || 0;
+
+    // 3. Reservas totales
+    const bookingsCountData = await sql`
+      SELECT COUNT(b.id) as count
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.id
+      WHERE p.host_id = ${hostId}
+    `;
+    const totalBookings = Number(bookingsCountData.rows[0].count) || 0;
+
+    // 4. Lista de reservas
+    const bookingsData = await sql`
+      SELECT 
+        b.id,
+        p.title AS property_title,
+        u.name AS guest_name,
+        b.start_date,
+        b.end_date,
+        b.total_price,
+        b.status
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.id
+      JOIN users u ON b.guest_id = u.id
+      WHERE p.host_id = ${hostId}
+      ORDER BY b.created_at DESC
     `;
 
-    const customers = data.rows;
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch all customers.');
+    return {
+      totalEarnings,
+      occupancyRate: totalProps > 0 ? 65 : 0, // Mock for now or calculate based on dates
+      averageRating,
+      totalBookings,
+      bookingsList: bookingsData.rows,
+    };
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch host stats.');
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+// ==========================================
+// BOOKINGS
+// ==========================================
+
+export async function fetchLatestBookings() {
   noStore();
   try {
-    const data = await sql<CustomersTableType>`
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`}
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `;
+    const data = await sql<FormattedBooking>`
+      SELECT 
+        b.id, 
+        b.start_date, 
+        b.end_date, 
+        b.total_price, 
+        b.status,
+        p.title AS property_title,
+        p.city AS property_city,
+        u.name AS guest_name,
+        u.email AS guest_email
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.id
+      JOIN users u ON b.guest_id = u.id
+      ORDER BY b.created_at DESC
+      LIMIT 5
+    `;
 
-    const customers = data.rows.map((customer) => ({
-      ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
-    }));
-
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch customer table.');
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch the latest bookings.');
   }
 }
+
+// ==========================================
+// USERS
+// ==========================================
 
 export async function getUser(email: string) {
   try {
-    const user = await sql`SELECT * FROM users WHERE email=${email}`;
-    return user.rows[0] as User;
+    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    return user.rows[0];
   } catch (error) {
     console.error('Failed to fetch user:', error);
     throw new Error('Failed to fetch user.');
   }
 }
+
+// ==========================================
+// REVIEWS
+// ==========================================
+
+export async function fetchPropertyReviews(propertyId: string) {
+  noStore();
+  try {
+    const data = await sql<ReviewWithGuest>`
+      SELECT 
+        r.id,
+        r.property_id,
+        r.guest_id,
+        r.rating,
+        r.comment,
+        r.created_at,
+        u.name AS guest_name
+      FROM reviews r
+      JOIN users u ON r.guest_id = u.id
+      WHERE r.property_id = ${propertyId}
+      ORDER BY r.created_at DESC
+    `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    return [];
+  }
+}
+
+// ==========================================
+// GUEST BOOKINGS
+// ==========================================
+
+export async function fetchGuestBookings(guestId: string) {
+  noStore();
+  try {
+    const data = await sql<FormattedBooking>`
+      SELECT 
+        b.id, 
+        b.start_date, 
+        b.end_date, 
+        b.total_price, 
+        b.status,
+        b.created_at,
+        p.title AS property_title,
+        p.city AS property_city,
+        u.name AS guest_name,
+        u.email AS guest_email,
+        i.url AS property_image
+      FROM bookings b
+      JOIN properties p ON b.property_id = p.id
+      JOIN users u ON b.guest_id = u.id
+      LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+      WHERE b.guest_id = ${guestId}
+      ORDER BY b.created_at DESC
+    `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch guest bookings.');
+  }
+}
+

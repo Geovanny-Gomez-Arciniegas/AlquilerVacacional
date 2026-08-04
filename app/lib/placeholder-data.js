@@ -1,198 +1,108 @@
-// This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
-// https://nextjs.org/learn/dashboard-app/fetching-data
+// Datos de prueba para EcoBooking (Alquiler Vacacional)
 const users = [
   {
     id: '410544b2-4001-4271-9855-fec4b6a6442a',
-    name: 'User',
-    email: 'user@nextmail.com',
-    password: '123456',
+    name: 'Admin User',
+    email: 'admin@ecobooking.com',
+    password: 'password123',
+    role: 'admin',
   },
-];
-
-const customers = [
   {
     id: '3958dc9e-712f-4377-85e9-fec4b6a6442a',
-    name: 'Delba de Oliveira',
-    email: 'delba@oliveira.com',
-    image_url: '/customers/delba-de-oliveira.png',
+    name: 'Host User',
+    email: 'host@ecobooking.com',
+    password: 'password123',
+    role: 'host',
   },
   {
     id: '3958dc9e-742f-4377-85e9-fec4b6a6442a',
-    name: 'Lee Robinson',
-    email: 'lee@robinson.com',
-    image_url: '/customers/lee-robinson.png',
-  },
-  {
-    id: '3958dc9e-737f-4377-85e9-fec4b6a6442a',
-    name: 'Hector Simpson',
-    email: 'hector@simpson.com',
-    image_url: '/customers/hector-simpson.png',
-  },
+    name: 'Guest User',
+    email: 'guest@ecobooking.com',
+    password: 'password123',
+    role: 'guest',
+  }
+];
+
+const properties = [
   {
     id: '50ca3e18-62cd-11ee-8c99-0242ac120002',
-    name: 'Steven Tey',
-    email: 'steven@tey.com',
-    image_url: '/customers/steven-tey.png',
-  },
-  {
-    id: '3958dc9e-787f-4377-85e9-fec4b6a6442a',
-    name: 'Steph Dietz',
-    email: 'steph@dietz.com',
-    image_url: '/customers/steph-dietz.png',
+    host_id: users[1].id,
+    title: 'Cabaña del Bosque',
+    description: 'Hermosa cabaña de madera rodeada de naturaleza, ideal para relajarse y desconectar de la ciudad.',
+    city: 'Medellín',
+    country: 'Colombia',
+    price_per_night: 120.50,
+    max_guests: 4,
+    category: 'Cabaña',
+    bedrooms: 2,
+    bathrooms: 1,
+    amenities: ['Wifi', 'Piscina', 'Cocina', 'Vista a la montaña'],
+    rating: 4.8,
   },
   {
     id: '76d65c26-f784-44a2-ac19-586678f7c2f2',
-    name: 'Michael Novotny',
-    email: 'michael@novotny.com',
-    image_url: '/customers/michael-novotny.png',
-  },
-  {
-    id: 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa',
-    name: 'Evil Rabbit',
-    email: 'evil@rabbit.com',
-    image_url: '/customers/evil-rabbit.png',
-  },
+    host_id: users[1].id,
+    title: 'Apartamento Frente al Mar',
+    description: 'Apartamento moderno con vista al mar y acceso directo a la playa. Incluye todas las comodidades.',
+    city: 'Cartagena',
+    country: 'Colombia',
+    price_per_night: 200.00,
+    max_guests: 6,
+    category: 'Apartamento',
+    bedrooms: 3,
+    bathrooms: 2,
+    amenities: ['Aire acondicionado', 'Frente a la playa', 'Wifi', 'Piscina'],
+    rating: 4.9,
+  }
+];
+
+const images = [
   {
     id: '126eed9c-c90c-4ef6-a4a8-fcf7408d3c66',
-    name: 'Emil Kowalski',
-    email: 'emil@kowalski.com',
-    image_url: '/customers/emil-kowalski.png',
+    property_id: properties[0].id,
+    url: 'https://images.unsplash.com/photo-1510798831971-661eb04b3739?q=80&w=600&auto=format&fit=crop',
+    is_primary: true,
   },
   {
     id: 'CC27C14A-0ACF-4F4A-A6C9-D45682C144B9',
-    name: 'Amy Burns',
-    email: 'amy@burns.com',
-    image_url: '/customers/amy-burns.png',
+    property_id: properties[0].id,
+    url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?q=80&w=600&auto=format&fit=crop',
+    is_primary: false,
   },
   {
     id: '13D07535-C59E-4157-A011-F8D2EF4E0CBB',
-    name: 'Balazs Orban',
-    email: 'balazs@orban.com',
-    image_url: '/customers/balazs-orban.png',
-  },
+    property_id: properties[1].id,
+    url: 'https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?q=80&w=600&auto=format&fit=crop',
+    is_primary: true,
+  }
 ];
 
-const invoices = [
+const bookings = [
   {
-    customer_id: customers[0].id,
-    amount: 15795,
-    status: 'pending',
-    date: '2022-12-06',
-  },
-  {
-    customer_id: customers[1].id,
-    amount: 20348,
-    status: 'pending',
-    date: '2022-11-14',
-  },
-  {
-    customer_id: customers[4].id,
-    amount: 3040,
-    status: 'paid',
-    date: '2022-10-29',
-  },
-  {
-    customer_id: customers[3].id,
-    amount: 44800,
-    status: 'paid',
-    date: '2023-09-10',
-  },
-  {
-    customer_id: customers[5].id,
-    amount: 34577,
-    status: 'pending',
-    date: '2023-08-05',
-  },
-  {
-    customer_id: customers[7].id,
-    amount: 54246,
-    status: 'pending',
-    date: '2023-07-16',
-  },
-  {
-    customer_id: customers[6].id,
-    amount: 666,
-    status: 'pending',
-    date: '2023-06-27',
-  },
-  {
-    customer_id: customers[3].id,
-    amount: 32545,
-    status: 'paid',
-    date: '2023-06-09',
-  },
-  {
-    customer_id: customers[4].id,
-    amount: 1250,
-    status: 'paid',
-    date: '2023-06-17',
-  },
-  {
-    customer_id: customers[5].id,
-    amount: 8546,
-    status: 'paid',
-    date: '2023-06-07',
-  },
-  {
-    customer_id: customers[1].id,
-    amount: 500,
-    status: 'paid',
-    date: '2023-08-19',
-  },
-  {
-    customer_id: customers[5].id,
-    amount: 8945,
-    status: 'paid',
-    date: '2023-06-03',
-  },
-  {
-    customer_id: customers[2].id,
-    amount: 8945,
-    status: 'paid',
-    date: '2023-06-18',
-  },
-  {
-    customer_id: customers[0].id,
-    amount: 8945,
-    status: 'paid',
-    date: '2023-10-04',
-  },
-  {
-    customer_id: customers[2].id,
-    amount: 1000,
-    status: 'paid',
-    date: '2022-06-05',
-  },
+    id: 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa',
+    property_id: properties[0].id,
+    guest_id: users[2].id,
+    start_date: '2024-10-10',
+    end_date: '2024-10-15',
+    total_price: 602.50,
+    status: 'confirmed',
+  }
 ];
 
-const revenue = [
-  { month: 'Jan', revenue: 2000 },
-  { month: 'Feb', revenue: 1800 },
-  { month: 'Mar', revenue: 2200 },
-  { month: 'Apr', revenue: 2500 },
-  { month: 'May', revenue: 2300 },
-  { month: 'Jun', revenue: 3200 },
-  { month: 'Jul', revenue: 3500 },
-  { month: 'Aug', revenue: 3700 },
-  { month: 'Sep', revenue: 2500 },
-  { month: 'Oct', revenue: 2800 },
-  { month: 'Nov', revenue: 3000 },
-  { month: 'Dec', revenue: 4800 },
-];
-
-const apartamento = [
-  { id: 1, 
-    nombre: 'Apartamento 1',
-    precioNoche: 2000,
-    descripcion: 'Apartamento en el centro de la ciudad con vistas al mar, a 5 minutos del aeropuerto',
-    capacidad: 4,
-  },
+const reviews = [
+  {
+    id: '811544b2-4001-4271-9855-fec4b6a6442c',
+    property_id: properties[0].id,
+    guest_id: users[2].id,
+    rating: 5,
+    comment: 'Lugar increíble, totalmente recomendado. Muy limpio y el anfitrión muy amable.',
+  }
 ];
 
 module.exports = {
   users,
-  customers,
-  invoices,
-  revenue,
-  apartamento,
+  properties,
+  images,
+  bookings,
+  reviews,
 };

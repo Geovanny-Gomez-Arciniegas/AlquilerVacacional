@@ -38,26 +38,43 @@ export default function Header() {
             <span>Explorando alojamientos en Santa Marta, CO</span>
           </div>
 
-          {/* Menú de Acceso / Dashboard */}
-          <div className="flex items-center gap-3">
+          {/* Menú de Acceso / Dashboard / Mis Reservas / Login */}
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
-              href="/host"
-              className="flex items-center gap-1.5 px-4 py-2 text-sm font-bold rounded-full border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-550/10 hover:bg-emerald-50 hover:scale-[1.02] shadow-sm hover:shadow-emerald-50/50 transition-all cursor-pointer"
-            >
-              <span>🔑 Modo Anfitrión</span>
-            </Link>
-
-            <Link
-              href="/dashboard"
+              href="/login"
               className={clsx(
-                "flex items-center gap-2 px-4 py-2 text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
+                "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
                 {
-                  "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100/50": pathname === '/dashboard'
+                  "bg-slate-900 border-slate-900 text-white font-bold": pathname === '/login'
                 }
               )}
             >
-              <UserCircleIcon className="w-5 h-5 text-slate-500" />
-              <span>Mi Cuenta</span>
+              <UserCircleIcon className="w-4 h-4 text-emerald-600" />
+              <span>Ingresar</span>
+            </Link>
+
+            <Link
+              href="/mis-reservas"
+              className={clsx(
+                "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
+                {
+                  "bg-emerald-50 border-emerald-300 text-emerald-800 font-bold": pathname === '/mis-reservas'
+                }
+              )}
+            >
+              <span>Mis Reservas</span>
+            </Link>
+
+            <Link
+              href="/host"
+              className={clsx(
+                "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/60 shadow-sm transition-all",
+                {
+                  "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700": pathname === '/host'
+                }
+              )}
+            >
+              <span>🔑 Modo Anfitrión</span>
             </Link>
           </div>
         </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Property } from '@/app/lib/properties-data';
+import { PropertyWithPrimaryImage } from '@/app/lib/definitions';
 import { 
   XMarkIcon, 
   CalendarDaysIcon, 
@@ -11,7 +11,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 interface BookingModalProps {
-  property: Property;
+  property: PropertyWithPrimaryImage;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -54,8 +54,8 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
     const timeDiff = d2.getTime() - d1.getTime();
     if (timeDiff > 0) {
       nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
-      subtotal = property.price * nights;
-      cleaningFee = Math.round(property.price * 0.15); // 15% tarifa fija de limpieza
+      subtotal = property.price_per_night * nights;
+      cleaningFee = Math.round(property.price_per_night * 0.15); // 15% tarifa fija de limpieza
       serviceFee = Math.round(subtotal * 0.08); // 8% de comisión de servicio
       total = subtotal + cleaningFee + serviceFee;
     }
@@ -112,8 +112,8 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
               {/* Información Propiedad Rápida */}
               <div className="flex gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                 <img 
-                  src={property.image} 
-                  alt={property.name}
+                  src={property.image_url || ''} 
+                  alt={property.title}
                   className="w-20 h-20 object-cover rounded-xl border border-slate-200"
                 />
                 <div className="flex flex-col justify-center">
@@ -121,11 +121,11 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
                     {property.category}
                   </span>
                   <h4 className="text-sm font-bold text-slate-800 line-clamp-1 mt-1">
-                    {property.name}
+                    {property.title}
                   </h4>
-                  <p className="text-xs text-slate-500 mt-0.5">{property.location}</p>
+                  <p className="text-xs text-slate-500 mt-0.5">{property.city}</p>
                   <p className="text-sm font-extrabold text-slate-800 mt-1">
-                    {formatPrice(property.price)} <span className="text-xs font-normal text-slate-500">/ noche</span>
+                    {formatPrice(property.price_per_night)} <span className="text-xs font-normal text-slate-500">/ noche</span>
                   </p>
                 </div>
               </div>
@@ -173,9 +173,9 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
                   onChange={(e) => setGuests(Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-slate-700"
                 >
-                  {Array.from({ length: property.capacity }, (_, i) => i + 1).map((num) => (
+                  {Array.from({ length: property.max_guests }, (_, i) => i + 1).map((num) => (
                     <option key={num} value={num}>
-                      {num} {num === 1 ? 'Huésped' : 'Huéspedes'} (Max. {property.capacity})
+                      {num} {num === 1 ? 'Huésped' : 'Huéspedes'} (Max. {property.max_guests})
                     </option>
                   ))}
                 </select>
@@ -185,7 +185,7 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
               {nights > 0 ? (
                 <div className="p-4 bg-slate-50/50 border border-slate-100 rounded-2xl space-y-3">
                   <div className="flex justify-between text-sm text-slate-600">
-                    <span>{formatPrice(property.price)} x {nights} {nights === 1 ? 'noche' : 'noches'}</span>
+                    <span>{formatPrice(property.price_per_night)} x {nights} {nights === 1 ? 'noche' : 'noches'}</span>
                     <span>{formatPrice(subtotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-slate-600">
@@ -225,7 +225,7 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
               </div>
               <h4 className="text-2xl font-extrabold text-slate-800">¡Reserva Confirmada!</h4>
               <p className="text-sm text-slate-600 max-w-sm">
-                Hemos registrado tu reserva para <span className="font-semibold text-slate-800">{property.name}</span>. Todo está listo para tu viaje.
+                Hemos registrado tu reserva para <span className="font-semibold text-slate-800">{property.title}</span>. Todo está listo para tu viaje.
               </p>
 
               <div className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2.5 text-left text-xs text-slate-600">
@@ -243,7 +243,7 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
                 </div>
                 <div className="flex justify-between">
                   <span>Total Pagado:</span>
-                  <span className="font-bold text-slate-850 text-slate-800">{formatPrice(total)}</span>
+                  <span className="font-bold text-slate-800">{formatPrice(total)}</span>
                 </div>
               </div>
 
