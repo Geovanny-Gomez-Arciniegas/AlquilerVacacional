@@ -307,6 +307,9 @@ export async function authenticate(
   formData: FormData,
 ) {
   try {
+    if (!formData.get('redirectTo')) {
+      formData.append('redirectTo', '/?welcome=1');
+    }
     await signIn('credentials', formData);
   } catch (error: any) {
     if (error?.type === 'CredentialsSignin' || error?.message?.includes('CredentialsSignin')) {

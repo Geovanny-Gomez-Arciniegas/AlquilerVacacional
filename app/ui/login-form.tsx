@@ -47,7 +47,8 @@ export default function LoginForm() {
       setTimeout(() => {
         setRegisterSuccess(false);
         setActiveTab('login');
-      }, 2500);
+        router.replace('/login?registered=1');
+      }, 2000);
     }
   };
 
