@@ -1,11 +1,24 @@
 import { fetchGuestBookings } from '@/app/lib/data';
 import { sql } from '@vercel/postgres';
+import { auth } from '@/auth';
 import GuestBookingsClient from './guest-bookings-client';
 
 export default async function MisReservasPage() {
-  // Obtenemos un usuario huésped de prueba de la base de datos
-  const userResult = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 1`;
-  const guestId = userResult.rows.length > 0 ? userResult.rows[0].id : 'e8b995cd-4567-4dc2-bccd-671e3db4a451';
+  const session = await auth();
+  let guestId = '';
+
+  if (session?.user?.email) {
+    const userResult = await sql`SELECT id FROM users WHERE email = ${session.user.email} LIMIT 1`;
+    if (userResult.rows.length > 0) {
+      guestId = userResult.rows[0].id;
+    }
+  }
+
+  if (!guestId) {
+    // Fallback para huésped de prueba
+    const guestUser = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 1`;
+    guestId = guestUser.rows.length > 0 ? guestUser.rows[0].id : 'e8b995cd-4567-4dc2-bccd-671e3db4a451';
+  }
 
   const bookings = await fetchGuestBookings(guestId);
 

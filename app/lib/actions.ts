@@ -3,7 +3,7 @@
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import bcrypt from 'bcrypt';
-import { signIn } from '@/auth';
+import { signIn, auth } from '@/auth';
 
 const DEFAULT_IMAGES: Record<string, string> = {
   'Cabañas': 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
@@ -198,6 +198,16 @@ export async function createBooking(formData: FormData) {
   const endDate = formData.get('endDate') as string;
   const totalPrice = Number(formData.get('totalPrice'));
   let guestId = formData.get('guestId') as string;
+
+  if (!guestId) {
+    const session = await auth();
+    if (session?.user?.email) {
+      const userResult = await sql`SELECT id FROM users WHERE email = ${session.user.email} LIMIT 1`;
+      if (userResult.rows.length > 0) {
+        guestId = userResult.rows[0].id;
+      }
+    }
+  }
 
   if (!guestId) {
     const guestUser = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 1`;
