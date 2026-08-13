@@ -4,6 +4,7 @@ import SearchFilters from '@/app/ui/search-filters';
 import PropertyResultsView from '@/app/ui/inicio/property-results-view';
 import { PropertyFilters } from '@/app/lib/definitions';
 import { SparklesIcon } from '@heroicons/react/24/outline';
+import { auth } from '@/auth';
 
 async function PageContent({
   filters,
@@ -12,6 +13,8 @@ async function PageContent({
   filters: PropertyFilters;
   currentPage: number;
 }) {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
   const properties = await fetchFilteredProperties(filters, currentPage);
 
   return (
@@ -36,7 +39,7 @@ async function PageContent({
       <SearchFilters />
 
       {/* Resultados de la Búsqueda (Grid / Mapa Interactivo) */}
-      <PropertyResultsView properties={properties} />
+      <PropertyResultsView properties={properties} isLoggedIn={isLoggedIn} />
     </div>
   );
 }

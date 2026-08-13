@@ -10,9 +10,10 @@ interface BookingWidgetProps {
   propertyId: string;
   pricePerNight: number;
   maxGuests: number;
+  isLoggedIn?: boolean;
 }
 
-export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: BookingWidgetProps) {
+export default function BookingWidget({ propertyId, pricePerNight, maxGuests, isLoggedIn = false }: BookingWidgetProps) {
   const router = useRouter();
   
   // Fechas por defecto: mañana a 3 días después
@@ -57,6 +58,12 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!isLoggedIn) {
+      router.push(`/login?callbackUrl=/alojamientos/${propertyId}`);
+      return;
+    }
+
     if (nights <= 0) {
       setErrorMsg('La fecha de salida debe ser posterior a la de llegada.');
       return;
@@ -196,7 +203,7 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
 
         <button
           type="submit"
-          disabled={isSubmitting || nights <= 0}
+          disabled={isSubmitting || (isLoggedIn && nights <= 0)}
           className="w-full py-4 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-2xl font-bold text-base shadow-md hover:shadow-lg hover:-translate-y-[1px] active:translate-y-0 transition-all flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
@@ -204,8 +211,10 @@ export default function BookingWidget({ propertyId, pricePerNight, maxGuests }: 
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               <span>Confirmando...</span>
             </>
-          ) : (
+          ) : isLoggedIn ? (
             <span>Reservar ahora</span>
+          ) : (
+            <span>Iniciar sesión para reservar</span>
           )}
         </button>
 
