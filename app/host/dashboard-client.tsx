@@ -118,7 +118,7 @@ export default function DashboardClient({
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (property: HostProperty) => {
+  const handleOpenEdit = async (property: HostProperty) => {
     setEditingProperty(property);
     setFormName(property.title);
     setFormCategory(property.category as typeof CATEGORIES[number] || 'Cabañas');
@@ -130,11 +130,39 @@ export default function DashboardClient({
     setFormBathrooms(property.bathrooms);
     setFormImage(property.image_url || '');
 
-    const isDefault = property.image_url ? Object.values(DEFAULT_IMAGES).includes(property.image_url) : true;
-    setUseDefaultImage(isDefault);
-    setUploadedImages(property.image_url ? [property.image_url] : []);
+    setUseDefaultImage(false);
+    setUploadedImages([]);
     setFormAmenities(property.amenities || []);
     setIsModalOpen(true);
+
+    // Cargar galería completa de imágenes para esta propiedad
+    try {
+      const res = await fetch(`/api/properties/${property.id}/images`);
+      if (res.ok) {
+        const images: Array<{ url: string; is_primary: boolean }> = await res.json();
+        if (images.length > 0) {
+          // Ordenar dejando la primaria al inicio
+          const sortedUrls = images
+            .sort((a, b) => (b.is_primary ? 1 : 0) - (a.is_primary ? 1 : 0))
+            .map(i => i.url);
+          setUploadedImages(sortedUrls);
+        } else if (property.image_url) {
+          setUploadedImages([property.image_url]);
+        } else {
+          setUseDefaultImage(true);
+        }
+      } else if (property.image_url) {
+        setUploadedImages([property.image_url]);
+      } else {
+        setUseDefaultImage(true);
+      }
+    } catch {
+      if (property.image_url) {
+        setUploadedImages([property.image_url]);
+      } else {
+        setUseDefaultImage(true);
+      }
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
