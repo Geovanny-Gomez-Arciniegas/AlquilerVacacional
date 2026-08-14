@@ -2,6 +2,7 @@ import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import LayoutWrapper from '@/app/ui/panel/layout-wrapper';
+import WelcomeBanner from '@/app/ui/welcome-banner';
 
 export const metadata: Metadata = {
   title: {
@@ -19,7 +20,12 @@ export default function RootLayout({
 }) {
   return (
     <html className={`${inter.className} antialiased`} lang="es">
-      <body className="bg-slate-50 text-slate-900">
+      <body className="bg-slate-50 text-slate-900 relative">
+        <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
+          <div className="pointer-events-auto">
+            <WelcomeBanner />
+          </div>
+        </div>
         <LayoutWrapper>{children}</LayoutWrapper>
       </body>
     </html>

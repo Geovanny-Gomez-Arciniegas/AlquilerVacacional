@@ -1,6 +1,7 @@
 import { fetchPropertyById, fetchPropertyReviews } from '@/app/lib/data';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { auth } from '@/auth';
 import BookingWidget from './booking-widget';
 import ReviewsSection from './reviews-section';
 import { 
@@ -13,6 +14,9 @@ import {
 import PropertyMap from '@/app/ui/map/property-map';
 
 export default async function PropertyPage({ params }: { params: { id: string } }) {
+  const session = await auth();
+  const isLoggedIn = !!session?.user;
+
   const [property, reviews] = await Promise.all([
     fetchPropertyById(params.id),
     fetchPropertyReviews(params.id)
@@ -158,6 +162,7 @@ export default async function PropertyPage({ params }: { params: { id: string } 
               propertyId={property.id}
               pricePerNight={Number(property.price_per_night)}
               maxGuests={property.max_guests}
+              isLoggedIn={isLoggedIn}
             />
           </div>
         </div>

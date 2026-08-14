@@ -1,22 +1,42 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   SparklesIcon, 
   UserCircleIcon,
-  GlobeAmericasIcon
+  GlobeAmericasIcon,
+  ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline';
 import clsx from 'clsx';
+import { logoutUser } from '@/app/lib/actions';
 
-export default function Header() {
+interface HeaderProps {
+  user?: {
+    name?: string | null;
+    email?: string | null;
+    role?: string | null;
+  } | null;
+}
+
+export default function Header({ user }: HeaderProps) {
   const pathname = usePathname();
+  const router = useRouter();
 
   // No mostramos este header global dentro de las rutas del panel de control
-  // ya que el dashboard tiene su propio layout de admin.
   if (pathname?.startsWith('/dashboard')) {
     return null;
   }
+
+  const isLoggedIn = !!user;
+  const isHost = user?.role === 'host' || user?.role === 'admin';
+
+  const handleHostClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isLoggedIn && !isHost) {
+      e.preventDefault();
+      alert('⚠️ No eres un anfitrión. El Modo Anfitrión requiere una cuenta con rol de Anfitrión.');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-white/85 backdrop-blur-md border-b border-slate-100 shadow-sm transition-all duration-300">
@@ -38,20 +58,32 @@ export default function Header() {
             <span>Explorando alojamientos en Santa Marta, CO</span>
           </div>
 
-          {/* Menú de Acceso / Dashboard / Mis Reservas / Login */}
+          {/* Menú de Acceso / Dashboard / Mis Reservas / Login / Salir */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className={clsx(
-                "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
-                {
-                  "bg-slate-900 border-slate-900 text-white font-bold": pathname === '/login'
-                }
-              )}
-            >
-              <UserCircleIcon className="w-4 h-4 text-emerald-600" />
-              <span>Ingresar</span>
-            </Link>
+            {!isLoggedIn ? (
+              <Link
+                href="/login"
+                className={clsx(
+                  "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-sm hover:border-slate-300 transition-all",
+                  {
+                    "bg-slate-900 border-slate-900 text-white font-bold": pathname === '/login'
+                  }
+                )}
+              >
+                <UserCircleIcon className="w-4 h-4 text-emerald-600" />
+                <span>Ingresar</span>
+              </Link>
+            ) : (
+              <form action={async () => { await logoutUser(); }}>
+                <button
+                  type="submit"
+                  className="flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-semibold rounded-full border border-rose-200 text-rose-700 bg-rose-50/50 hover:bg-rose-100/60 shadow-sm transition-all"
+                >
+                  <ArrowRightOnRectangleIcon className="w-4 h-4 text-rose-600" />
+                  <span>Salir</span>
+                </button>
+              </form>
+            )}
 
             <Link
               href="/mis-reservas"
@@ -67,6 +99,7 @@ export default function Header() {
 
             <Link
               href="/host"
+              onClick={handleHostClick}
               className={clsx(
                 "flex items-center gap-1.5 px-3.5 py-2 text-xs sm:text-sm font-bold rounded-full border border-emerald-200 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/60 shadow-sm transition-all",
                 {
@@ -81,4 +114,4 @@ export default function Header() {
       </div>
     </nav>
   );
-}
+}

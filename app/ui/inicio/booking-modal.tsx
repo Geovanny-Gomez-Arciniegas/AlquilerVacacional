@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { PropertyWithPrimaryImage } from '@/app/lib/definitions';
+import { createBooking } from '@/app/lib/actions';
 import { 
   XMarkIcon, 
   CalendarDaysIcon, 
@@ -14,14 +16,18 @@ interface BookingModalProps {
   property: PropertyWithPrimaryImage;
   isOpen: boolean;
   onClose: () => void;
+  isLoggedIn?: boolean;
 }
 
-export default function BookingModal({ property, isOpen, onClose }: BookingModalProps) {
+export default function BookingModal({ property, isOpen, onClose, isLoggedIn = false }: BookingModalProps) {
+  const router = useRouter();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [confirmationCode, setConfirmationCode] = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Pre-cargar fechas por defecto (mañana y pasado mañana)
   useEffect(() => {
@@ -36,6 +42,7 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
       setCheckOut(dayAfter.toISOString().split('T')[0]);
       setGuests(1);
       setIsConfirmed(false);
+      setErrorMsg('');
     }
   }, [isOpen]);
 
@@ -61,14 +68,40 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
     }
   }
 
-  const handleBook = (e: React.FormEvent) => {
+  const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (nights <= 0) return;
-    
-    // Generar código aleatorio
-    const randCode = 'EB-' + Math.floor(100000 + Math.random() * 900000);
-    setConfirmationCode(randCode);
-    setIsConfirmed(true);
+
+    if (!isLoggedIn) {
+      router.push(`/login?callbackUrl=/alojamientos/${property.id}`);
+      return;
+    }
+
+    if (nights <= 0) {
+      setErrorMsg('La fecha de salida debe ser posterior a la de entrada.');
+      return;
+    }
+
+    setErrorMsg('');
+    setIsSubmitting(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('propertyId', property.id);
+      formData.append('startDate', checkIn);
+      formData.append('endDate', checkOut);
+      formData.append('totalPrice', total.toString());
+
+      await createBooking(formData);
+      
+      const randCode = 'EB-' + Math.floor(100000 + Math.random() * 900000);
+      setConfirmationCode(randCode);
+      setIsConfirmed(true);
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('Ocurrió un error al procesar la reserva.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatPrice = (val: number) => {
@@ -109,6 +142,12 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
         <div className="overflow-y-auto p-6 flex-1">
           {!isConfirmed ? (
             <form onSubmit={handleBook} className="space-y-6">
+              {errorMsg && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-medium">
+                  {errorMsg}
+                </div>
+              )}
+
               {/* Información Propiedad Rápida */}
               <div className="flex gap-4 p-3 bg-slate-50 rounded-2xl border border-slate-100">
                 <img 
@@ -211,10 +250,19 @@ export default function BookingModal({ property, isOpen, onClose }: BookingModal
               {/* Botón de Confirmación */}
               <button 
                 type="submit"
-                disabled={nights <= 0}
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 text-white font-extrabold text-base rounded-2xl shadow-lg shadow-emerald-100 disabled:shadow-none hover:shadow-emerald-200 hover:-translate-y-[1px] active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed"
+                disabled={isSubmitting || (isLoggedIn && nights <= 0)}
+                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 text-white font-extrabold text-base rounded-2xl shadow-lg shadow-emerald-100 disabled:shadow-none hover:shadow-emerald-200 hover:-translate-y-[1px] active:translate-y-0 transition-all cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Confirmar y Reservar
+                {isSubmitting ? (
+                  <>
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Confirmando...</span>
+                  </>
+                ) : isLoggedIn ? (
+                  <span>Confirmar y Reservar</span>
+                ) : (
+                  <span>Iniciar sesión para reservar</span>
+                )}
               </button>
             </form>
           ) : (

@@ -8,9 +8,10 @@ import { Squares2X2Icon, MapIcon } from '@heroicons/react/24/outline';
 
 interface PropertyResultsViewProps {
   properties: PropertyWithPrimaryImage[];
+  isLoggedIn?: boolean;
 }
 
-export default function PropertyResultsView({ properties }: PropertyResultsViewProps) {
+export default function PropertyResultsView({ properties, isLoggedIn = false }: PropertyResultsViewProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'map'>('grid');
 
   return (
@@ -59,7 +60,7 @@ export default function PropertyResultsView({ properties }: PropertyResultsViewP
         viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.map((property) => (
-              <CardInicio key={property.id} property={property} />
+              <CardInicio key={property.id} property={property} isLoggedIn={isLoggedIn} />
             ))}
           </div>
         ) : (
