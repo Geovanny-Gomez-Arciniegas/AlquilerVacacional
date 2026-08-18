@@ -2,7 +2,7 @@
 
 import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { signIn, signOut, auth } from '@/auth';
 
 
@@ -27,7 +27,7 @@ export async function createProperty(formData: FormData, hostId: string) {
   const useDefaultImage = formData.get('useDefaultImage') === 'true';
   const customImageUrl = formData.get('image') as string;
   const uploadedUrls = formData.getAll('imageUrls') as string[];
-  
+
   let allImageUrls: string[] = [];
   if (uploadedUrls.length > 0) {
     allImageUrls = uploadedUrls;
@@ -46,9 +46,9 @@ export async function createProperty(formData: FormData, hostId: string) {
       VALUES (${hostId}, ${title}, ${description}, ${city}, ${country}, ${category}, ${price}, ${capacity}, ${bedrooms}, ${bathrooms}, ${`{${amenities.join(',')}}`}, 5.0)
       RETURNING id
     `;
-    
+
     const propertyId = insertedProperty.rows[0].id;
-    
+
     // Insertar imágenes (la primera marcada como is_primary = true)
     for (let i = 0; i < allImageUrls.length; i++) {
       const isPrimary = i === 0;
@@ -79,7 +79,7 @@ export async function updateProperty(id: string, formData: FormData) {
   const useDefaultImage = formData.get('useDefaultImage') === 'true';
   const customImageUrl = formData.get('image') as string;
   const uploadedUrls = formData.getAll('imageUrls') as string[];
-  
+
   let allImageUrls: string[] = [];
   if (uploadedUrls.length > 0) {
     allImageUrls = uploadedUrls;
@@ -146,9 +146,9 @@ export async function simulateBooking(hostId: string) {
     // 1. Get a random property for this host
     const propertiesData = await sql`SELECT id, price_per_night FROM properties WHERE host_id = ${hostId}`;
     if (propertiesData.rows.length === 0) return;
-    
+
     const randomProp = propertiesData.rows[Math.floor(Math.random() * propertiesData.rows.length)];
-    
+
     // 2. Get a random guest (just get any user who is a guest)
     const guestsData = await sql`SELECT id FROM users WHERE role = 'guest' LIMIT 10`;
     let guestId = null;
@@ -161,23 +161,23 @@ export async function simulateBooking(hostId: string) {
         guestId = usersData.rows[Math.floor(Math.random() * usersData.rows.length)].id;
       }
     }
-    
+
     if (!guestId) return;
 
     // 3. Generate random nights and dates
     const nights = Math.floor(Math.random() * 5) + 2;
     const totalPrice = randomProp.price_per_night * nights;
-    
+
     const today = new Date();
     const futureDays = Math.floor(Math.random() * 15) + 1;
     const checkInDate = new Date(today);
     checkInDate.setDate(today.getDate() + futureDays);
     const checkOutDate = new Date(checkInDate);
     checkOutDate.setDate(checkInDate.getDate() + nights);
-    
+
     const padZero = (n: number) => String(n).padStart(2, '0');
     const formatDate = (d: Date) => `${d.getFullYear()}-${padZero(d.getMonth() + 1)}-${padZero(d.getDate())}`;
-    
+
     const statuses = ['confirmed', 'pending', 'cancelled'];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
 
@@ -185,7 +185,7 @@ export async function simulateBooking(hostId: string) {
       INSERT INTO bookings (property_id, guest_id, start_date, end_date, total_price, status)
       VALUES (${randomProp.id}, ${guestId}, ${formatDate(checkInDate)}, ${formatDate(checkOutDate)}, ${totalPrice}, ${status})
     `;
-    
+
     revalidatePath('/host');
   } catch (error) {
     console.error('Database Error:', error);

@@ -6,7 +6,7 @@ const {
   bookings,
   reviews,
 } = require('../app/lib/placeholder-data.js');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 async function seedUsers(client) {
   try {
