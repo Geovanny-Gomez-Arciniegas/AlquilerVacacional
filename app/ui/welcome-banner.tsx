@@ -16,6 +16,15 @@ function WelcomeBannerContent() {
   const [visible, setVisible] = useState(false);
   const [type, setType] = useState<'welcome' | 'registered' | 'unauthorized' | null>(null);
 
+  const handleDismiss = () => {
+    setVisible(false);
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('welcome');
+    params.delete('registered');
+    params.delete('error');
+    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
+  };
+
   useEffect(() => {
     if (isWelcome) {
       setType('welcome');
@@ -29,14 +38,15 @@ function WelcomeBannerContent() {
     }
   }, [isWelcome, isRegistered, isUnauthorizedHost]);
 
-  const handleDismiss = () => {
-    setVisible(false);
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('welcome');
-    params.delete('registered');
-    params.delete('error');
-    router.replace(params.toString() ? `${pathname}?${params.toString()}` : pathname);
-  };
+  useEffect(() => {
+    if (!visible) return;
+
+    const timer = setTimeout(() => {
+      handleDismiss();
+    }, 40000);
+
+    return () => clearTimeout(timer);
+  }, [visible, searchParams, pathname]);
 
   if (!visible || !type) return null;
 
