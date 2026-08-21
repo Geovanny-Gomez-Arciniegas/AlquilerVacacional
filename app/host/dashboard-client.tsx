@@ -172,45 +172,56 @@ export default function DashboardClient({
     setUploadError('');
     setIsUploading(true);
     const newUrls: string[] = [];
+    const failedFiles: string[] = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         let fileToUpload = file;
 
-        // Intentar compresión WebP; si el navegador no soporta Canvas/toBlob, usar el archivo original
+        // Intentar compresión WebP en el navegador; si falla, subir archivo original
         try {
           fileToUpload = await compressAndConvertToWebP(file);
         } catch (compressionErr) {
-          console.warn('Compresión WebP no completada, subiendo archivo original:', compressionErr);
+          console.warn(`Compresión WebP omitida para "${file.name}":`, compressionErr);
           fileToUpload = file;
         }
 
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', fileToUpload);
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', fileToUpload);
 
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
 
-        const data = await res.json().catch(() => null);
+          const data = await res.json().catch(() => null);
 
-        if (!res.ok || !data?.url) {
-          throw new Error(data?.error || `Error ${res.status} al subir "${file.name}"`);
+          if (!res.ok || !data?.url) {
+            throw new Error(data?.error || `Error ${res.status}`);
+          }
+
+          newUrls.push(data.url);
+        } catch (singleUploadErr: any) {
+          console.error(`Error al subir ${file.name}:`, singleUploadErr);
+          failedFiles.push(`${file.name} (${singleUploadErr?.message || 'Error de red'})`);
         }
-
-        newUrls.push(data.url);
       }
 
-      setUploadedImages(prev => [...prev, ...newUrls]);
-      setUseDefaultImage(false);
+      if (newUrls.length > 0) {
+        setUploadedImages(prev => [...prev, ...newUrls]);
+        setUseDefaultImage(false);
+      }
+
+      if (failedFiles.length > 0) {
+        setUploadError(`No se pudieron subir las siguientes imágenes: ${failedFiles.join(', ')}`);
+      }
     } catch (err: any) {
-      console.error('Error al subir archivos:', err);
-      setUploadError(err?.message || 'Ocurrió un error al procesar o subir las imágenes.');
+      console.error('Error general en subida:', err);
+      setUploadError(err?.message || 'Ocurrió un error inesperado al subir las imágenes.');
     } finally {
       setIsUploading(false);
-      // Reset input value to allow re-uploading the same file if needed
       e.target.value = '';
     }
   };
