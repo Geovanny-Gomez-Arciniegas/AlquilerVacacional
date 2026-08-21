@@ -172,38 +172,57 @@ export default function DashboardClient({
     setUploadError('');
     setIsUploading(true);
     const newUrls: string[] = [];
+    const failedFiles: string[] = [];
 
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        // Compresión WebP automática en el cliente
-        const compressedFile = await compressAndConvertToWebP(file);
+        let fileToUpload = file;
 
-        const uploadFormData = new FormData();
-        uploadFormData.append('file', compressedFile);
-
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: uploadFormData,
-        });
-
-        if (!res.ok) {
-          throw new Error('Falló la subida de una imagen');
+        // Intentar compresión WebP en el navegador; si falla, subir archivo original
+        try {
+          fileToUpload = await compressAndConvertToWebP(file);
+        } catch (compressionErr) {
+          console.warn(`Compresión WebP omitida para "${file.name}":`, compressionErr);
+          fileToUpload = file;
         }
 
-        const data = await res.json();
-        if (data.url) {
+        try {
+          const uploadFormData = new FormData();
+          uploadFormData.append('file', fileToUpload);
+
+          const res = await fetch('/api/upload', {
+            method: 'POST',
+            body: uploadFormData,
+          });
+
+          const data = await res.json().catch(() => null);
+
+          if (!res.ok || !data?.url) {
+            throw new Error(data?.error || `Error ${res.status}`);
+          }
+
           newUrls.push(data.url);
+        } catch (singleUploadErr: any) {
+          console.error(`Error al subir ${file.name}:`, singleUploadErr);
+          failedFiles.push(`${file.name} (${singleUploadErr?.message || 'Error de red'})`);
         }
       }
 
-      setUploadedImages(prev => [...prev, ...newUrls]);
-      setUseDefaultImage(false);
-    } catch (err) {
-      console.error(err);
-      setUploadError('Ocurrió un error al procesar o subir las imágenes.');
+      if (newUrls.length > 0) {
+        setUploadedImages(prev => [...prev, ...newUrls]);
+        setUseDefaultImage(false);
+      }
+
+      if (failedFiles.length > 0) {
+        setUploadError(`No se pudieron subir las siguientes imágenes: ${failedFiles.join(', ')}`);
+      }
+    } catch (err: any) {
+      console.error('Error general en subida:', err);
+      setUploadError(err?.message || 'Ocurrió un error inesperado al subir las imágenes.');
     } finally {
       setIsUploading(false);
+      e.target.value = '';
     }
   };
 

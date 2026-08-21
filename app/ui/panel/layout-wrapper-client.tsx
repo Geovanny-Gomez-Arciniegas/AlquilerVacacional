@@ -15,9 +15,9 @@ interface LayoutWrapperClientProps {
 
 export default function LayoutWrapperClient({ children, user }: LayoutWrapperClientProps) {
   const pathname = usePathname() || '';
-  const isDashboardOrLogin = pathname.startsWith('/dashboard') || pathname.startsWith('/login') || pathname.startsWith('/host');
+  const isAuthOrHost = pathname.startsWith('/login') || pathname.startsWith('/host');
 
-  if (isDashboardOrLogin) {
+  if (isAuthOrHost) {
     return <>{children}</>;
   }
 

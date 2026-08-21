@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { CardInicio } from '@/app/ui/inicio/cards1';
+import { CardInicio } from '@/app/ui/inicio/cards';
 import { fetchFilteredProperties } from '@/app/lib/data';
 import SearchFilters from '@/app/ui/search-filters';
 import { PropertyFilters } from '@/app/lib/definitions';

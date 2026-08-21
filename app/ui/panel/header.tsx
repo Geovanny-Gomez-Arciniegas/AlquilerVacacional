@@ -23,10 +23,6 @@ export default function Header({ user }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
 
-  // No mostramos este header global dentro de las rutas del panel de control
-  if (pathname?.startsWith('/dashboard')) {
-    return null;
-  }
 
   const isLoggedIn = !!user;
   const isHost = user?.role === 'host' || user?.role === 'admin';
@@ -114,4 +110,4 @@ export default function Header({ user }: HeaderProps) {
       </div>
     </nav>
   );
-}
+}

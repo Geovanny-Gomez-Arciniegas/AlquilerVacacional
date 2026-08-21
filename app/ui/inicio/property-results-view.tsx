@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { PropertyWithPrimaryImage } from '@/app/lib/definitions';
-import { CardInicio } from '@/app/ui/inicio/cards1';
+import { CardInicio } from '@/app/ui/inicio/cards';
 import ExplorationMap from '@/app/ui/map/exploration-map';
 import { Squares2X2Icon, MapIcon } from '@heroicons/react/24/outline';
 
