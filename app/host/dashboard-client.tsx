@@ -176,34 +176,42 @@ export default function DashboardClient({
     try {
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        // Compresión WebP automática en el cliente
-        const compressedFile = await compressAndConvertToWebP(file);
+        let fileToUpload = file;
+
+        // Intentar compresión WebP; si el navegador no soporta Canvas/toBlob, usar el archivo original
+        try {
+          fileToUpload = await compressAndConvertToWebP(file);
+        } catch (compressionErr) {
+          console.warn('Compresión WebP no completada, subiendo archivo original:', compressionErr);
+          fileToUpload = file;
+        }
 
         const uploadFormData = new FormData();
-        uploadFormData.append('file', compressedFile);
+        uploadFormData.append('file', fileToUpload);
 
         const res = await fetch('/api/upload', {
           method: 'POST',
           body: uploadFormData,
         });
 
-        if (!res.ok) {
-          throw new Error('Falló la subida de una imagen');
+        const data = await res.json().catch(() => null);
+
+        if (!res.ok || !data?.url) {
+          throw new Error(data?.error || `Error ${res.status} al subir "${file.name}"`);
         }
 
-        const data = await res.json();
-        if (data.url) {
-          newUrls.push(data.url);
-        }
+        newUrls.push(data.url);
       }
 
       setUploadedImages(prev => [...prev, ...newUrls]);
       setUseDefaultImage(false);
-    } catch (err) {
-      console.error(err);
-      setUploadError('Ocurrió un error al procesar o subir las imágenes.');
+    } catch (err: any) {
+      console.error('Error al subir archivos:', err);
+      setUploadError(err?.message || 'Ocurrió un error al procesar o subir las imágenes.');
     } finally {
       setIsUploading(false);
+      // Reset input value to allow re-uploading the same file if needed
+      e.target.value = '';
     }
   };
 

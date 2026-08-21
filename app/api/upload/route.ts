@@ -26,41 +26,45 @@ export async function POST(request: Request) {
     const r2Endpoint = process.env.R2_ENDPOINT;
     const r2PublicDomain = process.env.R2_PUBLIC_DOMAIN || '';
 
-    // Si existen credenciales de Cloudflare R2 / S3
+    // Si existen credenciales de Cloudflare R2 / S3, intentar subir a R2 primero
     if (r2AccessKeyId && r2SecretAccessKey && r2BucketName && r2Endpoint) {
-      const s3Client = new S3Client({
-        region: 'auto',
-        endpoint: r2Endpoint,
-        credentials: {
-          accessKeyId: r2AccessKeyId,
-          secretAccessKey: r2SecretAccessKey,
-        },
-      });
+      try {
+        const s3Client = new S3Client({
+          region: 'auto',
+          endpoint: r2Endpoint,
+          credentials: {
+            accessKeyId: r2AccessKeyId,
+            secretAccessKey: r2SecretAccessKey,
+          },
+        });
 
-      const key = `properties/${filename}`;
+        const key = `properties/${filename}`;
 
-      await s3Client.send(
-        new PutObjectCommand({
-          Bucket: r2BucketName,
-          Key: key,
-          Body: buffer,
-          ContentType: file.type || 'image/webp',
-        })
-      );
+        await s3Client.send(
+          new PutObjectCommand({
+            Bucket: r2BucketName,
+            Key: key,
+            Body: buffer,
+            ContentType: file.type || 'image/webp',
+          })
+        );
 
-      const publicUrl = r2PublicDomain
-        ? `${r2PublicDomain.replace(/\/$/, '')}/${key}`
-        : `${r2Endpoint.replace(/\/$/, '')}/${r2BucketName}/${key}`;
+        const publicUrl = r2PublicDomain
+          ? `${r2PublicDomain.replace(/\/$/, '')}/${key}`
+          : `${r2Endpoint.replace(/\/$/, '')}/${r2BucketName}/${key}`;
 
-      return NextResponse.json({ url: publicUrl, storage: 'r2' });
+        return NextResponse.json({ url: publicUrl, storage: 'r2' });
+      } catch (r2Error) {
+        console.warn('R2 Upload falló, recurriendo al almacenamiento local en /uploads/:', r2Error);
+      }
     }
 
-    // Fallback de desarrollo local: Guardar en public/uploads/
+    // Fallback de desarrollo / local: Guardar en public/uploads/
     const uploadsDir = path.join(process.cwd(), 'public', 'uploads');
     try {
       await mkdir(uploadsDir, { recursive: true });
     } catch {
-      // Directerio ya existe
+      // Directorio ya existe
     }
 
     const filePath = path.join(uploadsDir, filename);
@@ -69,10 +73,10 @@ export async function POST(request: Request) {
     const localUrl = `/uploads/${filename}`;
 
     return NextResponse.json({ url: localUrl, storage: 'local' });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error al subir imagen:', error);
     return NextResponse.json(
-      { error: 'Falló la subida de la imagen.' },
+      { error: error?.message || 'Falló la subida de la imagen.' },
       { status: 500 }
     );
   }
