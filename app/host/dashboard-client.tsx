@@ -416,14 +416,14 @@ export default function DashboardClient({
       {activeTab === 'properties' ? (
         <div className="space-y-6">
           <div className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between">
-            <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
+            <div className="relative flex-1 flex items-center">
+              <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Buscar por nombre o ciudad..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:outline-none focus:border-emerald-300"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:outline-none focus:border-emerald-300"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
