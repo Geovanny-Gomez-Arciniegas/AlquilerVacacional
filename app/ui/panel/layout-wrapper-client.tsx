@@ -27,9 +27,9 @@ export default function LayoutWrapperClient({ children, user }: LayoutWrapperCli
       <div className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col md:flex-row gap-6">
           {/* Sidebar for Categories */}
-          <aside className="w-full md:w-56 flex-none">
+          <aside className="w-full md:w-60 flex-none">
             <div className="sticky top-22">
-              <SideNav />
+              <SideNav user={user} />
             </div>
           </aside>
           {/* Main Content */}
