@@ -13,7 +13,7 @@ export default function HostLayout({
   return (
     <div className="min-h-screen bg-slate-50/50 flex flex-col text-slate-800 antialiased">
       {/* Header del Panel de Anfitrión */}
-      <header className="sticky top-0 z-45 w-full bg-slate-900 border-b border-slate-800 text-white shadow-md">
+      <header className="sticky top-0 z-40 w-full bg-slate-900 border-b border-slate-800 text-white shadow-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo del Anfitrión */}

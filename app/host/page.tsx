@@ -1,11 +1,27 @@
 import { fetchHostProperties, fetchHostStats } from '@/app/lib/data';
 import DashboardClient from './dashboard-client';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import { sql } from '@vercel/postgres';
 
 export default async function HostDashboardPage() {
-  // Obtenemos un anfitrión de prueba de la base de datos
-  const userResult = await sql`SELECT id FROM users WHERE role = 'host' LIMIT 1`;
-  const hostId = userResult.rows.length > 0 ? userResult.rows[0].id : 'd2c884bd-3453-4dc2-bccd-671e3db4a450';
+  const session = await auth();
+  
+  if (!session?.user) {
+    redirect('/login');
+  }
+
+  let hostId = (session.user as any).id;
+  
+  // Si por alguna razón el ID no está en la sesión (sesión antigua), lo buscamos por email
+  if (!hostId && session.user.email) {
+    const userResult = await sql`SELECT id FROM users WHERE email = ${session.user.email}`;
+    hostId = userResult.rows[0]?.id;
+  }
+
+  if (!hostId) {
+    throw new Error('Host ID not found');
+  }
 
   const properties = await fetchHostProperties(hostId);
   const stats = await fetchHostStats(hostId);

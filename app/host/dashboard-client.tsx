@@ -16,14 +16,14 @@ import { createProperty, updateProperty, deleteProperty, simulateBooking } from 
 import { compressAndConvertToWebP } from '@/app/lib/image-optimizer';
 import { PhotoIcon, ArrowUpTrayIcon, XMarkIcon, CheckBadgeIcon } from '@heroicons/react/24/outline';
 
-const CATEGORIES = ['Cabañas', 'Casas', 'Apartamentos', 'Fincas', 'Habitaciones'] as const;
+const CATEGORIES = ['Cabaña', 'Casa', 'Apartamento', 'Finca', 'Habitación'] as const;
 
 const DEFAULT_IMAGES: Record<string, string> = {
-  'Cabañas': 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
-  'Casas': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
-  'Apartamentos': 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-  'Fincas': 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
-  'Habitaciones': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
+  'Cabaña': 'https://images.unsplash.com/photo-1499793983690-e29da59ef1c2?auto=format&fit=crop&w=800&q=80',
+  'Casa': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+  'Apartamento': 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+  'Finca': 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80',
+  'Habitación': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?auto=format&fit=crop&w=800&q=80',
 };
 
 // Types corresponding to the DB
@@ -80,7 +80,7 @@ export default function DashboardClient({
 
   // Form State
   const [formName, setFormName] = useState('');
-  const [formCategory, setFormCategory] = useState<typeof CATEGORIES[number]>('Cabañas');
+  const [formCategory, setFormCategory] = useState<typeof CATEGORIES[number]>('Cabaña');
   const [formDescription, setFormDescription] = useState('');
   const [formLocation, setFormLocation] = useState('');
   const [formPrice, setFormPrice] = useState(250000);
@@ -104,7 +104,7 @@ export default function DashboardClient({
   const handleOpenCreate = () => {
     setEditingProperty(null);
     setFormName('');
-    setFormCategory('Cabañas');
+    setFormCategory('Cabaña');
     setFormDescription('');
     setFormLocation('Santa Marta');
     setFormPrice(250000);
@@ -121,7 +121,7 @@ export default function DashboardClient({
   const handleOpenEdit = async (property: HostProperty) => {
     setEditingProperty(property);
     setFormName(property.title);
-    setFormCategory(property.category as typeof CATEGORIES[number] || 'Cabañas');
+    setFormCategory(property.category as typeof CATEGORIES[number] || 'Cabaña');
     setFormDescription(property.description);
     setFormLocation(property.city);
     setFormPrice(property.price_per_night);
@@ -416,14 +416,14 @@ export default function DashboardClient({
       {activeTab === 'properties' ? (
         <div className="space-y-6">
           <div className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col md:flex-row gap-4 justify-between">
-            <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-400" />
+            <div className="relative flex-1 flex items-center">
+              <MagnifyingGlassIcon className="absolute left-3 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Buscar por nombre o ciudad..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:outline-none focus:border-emerald-300"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-100 rounded-xl text-xs focus:outline-none focus:border-emerald-300"
               />
             </div>
             <div className="flex items-center gap-2 overflow-x-auto py-1 scrollbar-none">
