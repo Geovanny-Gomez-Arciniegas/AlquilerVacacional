@@ -121,6 +121,7 @@ export async function updateProperty(id: string, formData: FormData) {
     }
 
     revalidatePath('/host');
+    revalidatePath('/admin');
     revalidatePath('/');
     revalidatePath(`/alojamientos/${id}`);
   } catch (error) {
@@ -134,6 +135,7 @@ export async function deleteProperty(id: string) {
   try {
     await sql`DELETE FROM properties WHERE id = ${id}`;
     revalidatePath('/host');
+    revalidatePath('/admin');
     revalidatePath('/');
   } catch (error) {
     console.error('Database Error:', error);
