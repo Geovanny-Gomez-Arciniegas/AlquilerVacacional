@@ -127,7 +127,7 @@ export function CardInicio({ property, isLoggedIn = false }: CardInicioProps) {
             
             <button 
               onClick={() => setIsModalOpen(true)}
-              className="px-4.5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs tracking-wide uppercase rounded-xl shadow-md hover:shadow-lg shadow-emerald-50 hover:shadow-emerald-100 transition-all hover:-translate-y-[1px] active:translate-y-0 cursor-pointer"
+              className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-xs tracking-wide uppercase rounded-xl shadow-md hover:shadow-lg shadow-emerald-50 hover:shadow-emerald-100 transition-all hover:-translate-y-[1px] active:translate-y-0 cursor-pointer"
             >
               Reservar
             </button>

@@ -290,6 +290,38 @@ export async function fetchHostProperties(hostId: string) {
   }
 }
 
+export async function fetchAllPropertiesForAdmin() {
+  noStore();
+  try {
+    const data = await sql<PropertyWithPrimaryImage>`
+      SELECT 
+        p.id, 
+        p.title, 
+        p.city, 
+        p.country, 
+        p.category,
+        p.price_per_night, 
+        p.max_guests,
+        p.bedrooms,
+        p.bathrooms,
+        p.amenities,
+        p.rating,
+        p.description,
+        p.host_id,
+        u.name AS host_name,
+        i.url AS image_url
+      FROM properties p
+      LEFT JOIN users u ON p.host_id = u.id
+      LEFT JOIN images i ON p.id = i.property_id AND i.is_primary = true
+      ORDER BY p.created_at DESC
+    `;
+    return data.rows;
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch all properties for admin.');
+  }
+}
+
 export async function fetchHostStats(hostId: string) {
   noStore();
   try {

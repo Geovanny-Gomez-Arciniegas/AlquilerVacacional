@@ -105,6 +105,20 @@ export default function Header({ user }: HeaderProps) {
             >
               <span>🔑 <span className="hidden sm:inline">Modo </span>Anfitrión</span>
             </Link>
+
+            {user?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className={clsx(
+                  "flex items-center gap-1 px-2.5 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold rounded-full border border-rose-200 text-rose-700 bg-rose-50/50 hover:bg-rose-100/60 shadow-sm transition-all whitespace-nowrap",
+                  {
+                    "bg-rose-600 text-white border-rose-600 hover:bg-rose-700": pathname === '/admin'
+                  }
+                )}
+              >
+                <span>🛡️ <span className="hidden sm:inline">Panel </span>Admin</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

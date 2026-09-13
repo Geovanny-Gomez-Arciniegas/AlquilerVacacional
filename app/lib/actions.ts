@@ -121,6 +121,7 @@ export async function updateProperty(id: string, formData: FormData) {
     }
 
     revalidatePath('/host');
+    revalidatePath('/admin');
     revalidatePath('/');
     revalidatePath(`/alojamientos/${id}`);
   } catch (error) {
@@ -132,8 +133,17 @@ export async function updateProperty(id: string, formData: FormData) {
 
 export async function deleteProperty(id: string) {
   try {
+    // Eliminar registros relacionados explícitamente para evitar errores de llave foránea 
+    // en bases de datos antiguas que no tengan ON DELETE CASCADE.
+    await sql`DELETE FROM images WHERE property_id = ${id}`;
+    await sql`DELETE FROM bookings WHERE property_id = ${id}`;
+    await sql`DELETE FROM reviews WHERE property_id = ${id}`;
+    
+    // Finalmente, eliminar la propiedad
     await sql`DELETE FROM properties WHERE id = ${id}`;
+    
     revalidatePath('/host');
+    revalidatePath('/admin');
     revalidatePath('/');
   } catch (error) {
     console.error('Database Error:', error);
