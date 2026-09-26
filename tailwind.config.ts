@@ -2,6 +2,8 @@ import type { Config } from 'tailwindcss';
 import forms from '@tailwindcss/forms';
 
 const config: Config = {
+  // Enable class‑based dark mode
+  darkMode: 'class',
   content: [
     './pages/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',

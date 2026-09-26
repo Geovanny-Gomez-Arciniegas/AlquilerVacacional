@@ -1,4 +1,6 @@
-import '@/app/ui/global.css';
+'use client';
+import { setInitialTheme } from '@/app/utils/theme';
+import { useEffect } from 'react';
 import { inter } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import LayoutWrapper from '@/app/ui/panel/layout-wrapper';
@@ -17,7 +19,10 @@ export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
-}) {
+  useEffect(() => {
+    setInitialTheme();
+  }, []);
+
   return (
     <html className={`${inter.className} antialiased`} lang="es">
       <body className="bg-slate-50 text-slate-900 relative">

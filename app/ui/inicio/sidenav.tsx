@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 import NavLinks from '@/app/ui/inicio/nav-links';
-import { Squares2X2Icon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, ShieldCheckIcon, HomeModernIcon, UserIcon } from '@heroicons/react/24/outline';
+import { Squares2X2Icon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, ShieldCheckIcon, HomeModernIcon, UserIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline';
+import UserAvatar from '@/app/ui/inicio/UserAvatar';
 import { logoutUser } from '@/app/lib/actions';
 
 interface SideNavProps {
@@ -54,7 +55,7 @@ export default function SideNav({ user }: SideNavProps) {
     : (user?.email?.[0] || 'U').toUpperCase();
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm border border-slate-100 rounded-2xl p-4 shadow-sm flex flex-col gap-4">
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-100 dark:border-slate-600 rounded-2xl p-4 shadow-sm dark:shadow-slate-900/50 flex flex-col gap-4">
       {/* Sección Superior: Categorías */}
       <div>
         <div className="flex items-center gap-2 mb-3 pb-2 border-b border-slate-100">
@@ -72,6 +73,18 @@ export default function SideNav({ user }: SideNavProps) {
       {/* Sección Inferior: Usuario Activo (Desktop y Mobile) */}
       <div className="pt-3 border-t border-slate-100">
         {isLoggedIn ? (
+            {/* Dark mode toggle */}
+            <button
+              onClick={() => {
+                document.documentElement.classList.toggle('dark');
+              }}
+              className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300"
+              aria-label="Toggle dark mode"
+            >
+              <SunIcon className="w-5 h-5" />
+              <MoonIcon className="w-5 h-5 hidden dark:inline" />
+            </button>
+          ) : (
           <div className="bg-slate-50 border border-slate-100/80 rounded-xl p-3 flex flex-col gap-2.5 transition-all">
             <div className="flex items-center gap-2.5">
               {/* Avatar con Iniciales */}
@@ -126,7 +139,7 @@ export default function SideNav({ user }: SideNavProps) {
 
         {/* Footer info */}
         <div className="hidden md:block mt-3 text-[10px] text-slate-400 text-center">
-          <p>© 2026 EcoBooking CO.</p>
+          <p className="dark:text-slate-400">© 2026 EcoBooking CO.</p>
         </div>
       </div>
     </div>
