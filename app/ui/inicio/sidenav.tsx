@@ -44,16 +44,6 @@ export default function SideNav({ user }: SideNavProps) {
   const roleInfo = getRoleBadge(user?.role);
   const RoleIcon = roleInfo.icon;
 
-  // Obtener iniciales del usuario
-  const initials = user?.name
-    ? user.name
-        .split(' ')
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join('')
-        .toUpperCase()
-    : (user?.email?.[0] || 'U').toUpperCase();
-
   return (
     <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm border border-slate-100 dark:border-slate-600 rounded-2xl p-4 shadow-sm dark:shadow-slate-900/50 flex flex-col gap-4">
       {/* Sección Superior: Categorías */}
@@ -70,43 +60,46 @@ export default function SideNav({ user }: SideNavProps) {
         </div>
       </div>
 
-      {/* Sección Inferior: Usuario Activo (Desktop y Mobile) */}
-      <div className="pt-3 border-t border-slate-100">
+      {/* Sección Inferior: Usuario Activo y Modo Oscuro */}
+      <div className="pt-3 border-t border-slate-100 dark:border-slate-700 flex flex-col gap-3">
+        {/* Selector de Modo Oscuro */}
+        <div className="flex items-center justify-between px-1">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Tema</span>
+          <button
+            onClick={() => {
+              const isDark = document.documentElement.classList.toggle('dark');
+              localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            }}
+            className="flex items-center gap-1.5 p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            aria-label="Alternar modo oscuro"
+            title="Alternar modo oscuro"
+          >
+            <SunIcon className="w-4 h-4 dark:hidden text-amber-500" />
+            <MoonIcon className="w-4 h-4 hidden dark:inline text-indigo-400" />
+          </button>
+        </div>
+
         {isLoggedIn ? (
-            {/* Dark mode toggle */}
-            <button
-              onClick={() => {
-                document.documentElement.classList.toggle('dark');
-              }}
-              className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300"
-              aria-label="Toggle dark mode"
-            >
-              <SunIcon className="w-5 h-5" />
-              <MoonIcon className="w-5 h-5 hidden dark:inline" />
-            </button>
-          ) : (
-          <div className="bg-slate-50 border border-slate-100/80 rounded-xl p-3 flex flex-col gap-2.5 transition-all">
+          <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-100/80 dark:border-slate-600 rounded-xl p-3 flex flex-col gap-2.5 transition-all">
             <div className="flex items-center gap-2.5">
               {/* Avatar con Iniciales */}
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white font-bold text-xs flex items-center justify-center shadow-sm shrink-0">
-                {initials}
-              </div>
+              <UserAvatar user={user} />
 
               {/* Datos de Usuario */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className="text-xs font-semibold text-slate-800 truncate" title={user?.name || 'Usuario'}>
+                  <p className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate" title={user?.name || 'Usuario'}>
                     {user?.name || 'Usuario'}
                   </p>
                 </div>
-                <p className="text-[11px] text-slate-500 truncate" title={user?.email || ''}>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate" title={user?.email || ''}>
                   {user?.email || ''}
                 </p>
               </div>
             </div>
 
             {/* Badge de Rol y Botón de Salir */}
-            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-600">
               <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${roleInfo.bg}`}>
                 <RoleIcon className="w-3 h-3" />
                 {roleInfo.label}
@@ -125,8 +118,8 @@ export default function SideNav({ user }: SideNavProps) {
             </div>
           </div>
         ) : (
-          <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 text-center">
-            <p className="text-xs text-slate-600 mb-2">No has iniciado sesión</p>
+          <div className="bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-600 rounded-xl p-3 text-center">
+            <p className="text-xs text-slate-600 dark:text-slate-300 mb-2">No has iniciado sesión</p>
             <Link
               href="/login"
               className="inline-flex items-center justify-center gap-1.5 w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-sm transition-colors"
@@ -138,7 +131,7 @@ export default function SideNav({ user }: SideNavProps) {
         )}
 
         {/* Footer info */}
-        <div className="hidden md:block mt-3 text-[10px] text-slate-400 text-center">
+        <div className="hidden md:block mt-1 text-[10px] text-slate-400 text-center">
           <p className="dark:text-slate-400">© 2026 EcoBooking CO.</p>
         </div>
       </div>
