@@ -1,6 +1,4 @@
-'use client';
-import { setInitialTheme } from '@/app/utils/theme';
-import { useEffect } from 'react';
+import '@/app/ui/global.css';
 import { inter } from '@/app/ui/fonts';
 import { Metadata } from 'next';
 import LayoutWrapper from '@/app/ui/panel/layout-wrapper';
@@ -18,13 +16,24 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: { children: React.ReactNode }) {
-  useEffect(() => {
-    setInitialTheme();
-  }, []);
-
   return (
-    <html className={`${inter.className} antialiased`} lang="es">
-      <body className="bg-slate-50 text-slate-900 relative">
+    <html className={`${inter.className} antialiased`} lang="es" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.getItem('theme') === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
+      <body className="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 relative transition-colors duration-200">
         <div className="fixed top-0 left-0 right-0 z-[100] pointer-events-none">
           <div className="pointer-events-auto">
             <WelcomeBanner />
@@ -35,12 +44,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-
-
-
-
-
-
-
-
