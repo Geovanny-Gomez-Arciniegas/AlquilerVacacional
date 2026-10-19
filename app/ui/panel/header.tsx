@@ -40,12 +40,7 @@ export default function Header({ user }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo y Nombre */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0">
-            <div className="bg-gradient-to-tr from-emerald-500 to-teal-500 p-1.5 sm:p-2 rounded-xl text-white shadow-md shadow-teal-100 group-hover:scale-105 transition-transform">
-              <SparklesIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <span className="text-base sm:text-xl font-bold tracking-tight text-slate-800 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent group-hover:opacity-90 transition-opacity">
-              EcoBooking <span className="hidden md:inline text-emerald-500 font-light">Santa Marta</span>
-            </span>
+            <img src="/logo-horizontal.svg" alt="EcoBooking Logo" className="h-10 sm:h-12 md:h-16" />
           </Link>
 
           {/* Buscador / Ubicación Estilizado */}
