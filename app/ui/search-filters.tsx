@@ -134,7 +134,7 @@ export default function SearchFilters() {
     <div className="space-y-4">
       
       {/* Barra de Búsqueda Principal */}
-      <div className="bg-white border border-slate-200/80 p-2 sm:p-3 rounded-3xl shadow-lg shadow-slate-200/40 flex flex-col md:flex-row gap-2 items-center justify-between">
+      <div className="bg-white border border-slate-200/80 p-2 sm:p-3 rounded-3xl shadow-lg shadow-slate-200/40 flex flex-col md:flex-row flex-wrap gap-2 items-center justify-between">
         
         {/* Término / Ciudad */}
         <div className="flex-1 w-full relative flex items-center">
@@ -149,7 +149,7 @@ export default function SearchFilters() {
         </div>
 
         {/* Fechas */}
-        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto py-1">
+        <div className="flex flex-col md:flex-row gap-2 w-full md:w-auto overflow-x-auto py-1">
           <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 rounded-2xl p-1.5 px-3">
             <CalendarDaysIcon className="w-4 h-4 text-emerald-500 shrink-0" />
             <input
@@ -169,26 +169,28 @@ export default function SearchFilters() {
           </div>
 
           {/* Huéspedes */}
-          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-2xl px-3 py-2 shrink-0">
-            <UserGroupIcon className="w-4 h-4 text-emerald-500" />
-            <select
-              value={guests}
-              onChange={(e) => handleGuestsChange(Number(e.target.value))}
-              className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
-            >
-              {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
-                <option key={num} value={num}>
-                  {num} {num === 1 ? 'huésped' : 'huéspedes'}
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4 flex-wrap w-full">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 rounded-2xl px-3 py-2 w-full md:w-auto">
+              <UserGroupIcon className="w-4 h-4 text-emerald-500" />
+              <select className="w-full"
+                value={guests}
+                onChange={(e) => handleGuestsChange(Number(e.target.value))}
+                className="bg-transparent text-xs font-bold text-slate-700 focus:outline-none cursor-pointer"
+              >
+                {[1, 2, 3, 4, 5, 6, 8, 10].map((num) => (
+                  <option key={num} value={num}>
+                    {num} {num === 1 ? 'huésped' : 'huéspedes'}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Botón Abrir Modal Filtros Avanzados */}
           <button
             type="button"
             onClick={() => setIsFilterModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-all shadow-md shrink-0 relative"
+            className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl text-xs font-bold transition-all shadow-md shrink-0 relative w-full md:w-auto"
           >
             <AdjustmentsHorizontalIcon className="w-4 h-4 text-emerald-400" />
             <span>Filtros</span>

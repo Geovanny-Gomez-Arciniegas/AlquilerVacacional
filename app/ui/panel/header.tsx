@@ -40,7 +40,7 @@ export default function Header({ user }: HeaderProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo y Nombre */}
           <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group shrink-0">
-            <img src="/logo-horizontal.svg" alt="EcoBooking Logo" className="h-10 sm:h-12 md:h-16" />
+            <img src="/logo-horizontal.svg" alt="EcoBooking Logo" className="h-6 sm:h-10 md:h-16" />
           </Link>
 
           {/* Buscador / Ubicación Estilizado */}
